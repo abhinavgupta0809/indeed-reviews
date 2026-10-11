@@ -1,0 +1,118 @@
+review_id,platform,rating,gold_labels,gold_categories,gold_sentiment
+play_008be647-f3e6-4093-b594-a9bb5ad6365c,android,1,Specific Complaint,Employer Response & Status | Recommendations & Relevance,1
+play_a2835815-acb4-49b9-8f14-94738e5deb44,android,1,Specific Complaint,Fake & Scam Listings | Notifications & Emails,1
+play_12c4fb07-95cb-458e-9470-67b04e20bedd,android,1,Specific Complaint,Employer Response & Status,2
+play_f72c5165-a835-4c98-b665-1c9431539064,android,1,Generic Bad,,1
+play_27a05adf-9173-45d1-a783-108c2ffb3634,android,1,Specific Complaint,Fake & Scam Listings,1
+play_5b8b0c0e-05c1-4d7b-8736-cfe83a0412c7,android,1,Specific Complaint,Applying,1
+play_dd86ee25-2d21-4138-97af-c50dbc39df13,android,1,Specific Complaint,Location & Distance | Employer Response & Status,2
+play_a99907f1-4210-4806-bfed-84297b646730,android,1,Specific Complaint,Employer Response & Status,2
+play_95ca4091-b661-4e69-881a-4d7a3f267a8d,android,1,Specific Complaint,Listing Details & Quality,2
+play_10af3168-4f5e-42a7-aa94-084d741c8f63,android,1,Specific Complaint,Login & Account,2
+play_60dbf3a9-c178-4f93-9ad1-3ccd89352cd9,android,1,Specific Complaint,Employer Response & Status,1
+play_1f981a42-7179-4d62-b2b8-8ce6c085d658,android,1,Specific Complaint,Bugs & Performance,1
+play_9e946bbe-7089-4e44-9c30-776e35a186ad,android,1,Specific Complaint,Search & Filters | Location & Distance,2
+play_d808767c-c9cc-414c-8a60-319104dbfa7a,android,1,Specific Complaint,Customer Support | Bugs & Performance,1
+play_81210cd6-b135-4d22-b04c-bd542f530e8c,android,2,Specific Complaint,Recommendations & Relevance,2
+play_cb68d935-c098-4d0d-ac12-4b8cdf2aadf4,android,2,Specific Complaint,Fake & Scam Listings | Privacy & Data,1
+play_73f8b523-dc28-4943-9d6d-98074f8813a8,android,2,Specific Complaint,Employer Response & Status,2
+play_bca52e4f-d54d-4350-9439-3e3ab799c943,android,2,Specific Complaint,Fake & Scam Listings,2
+play_aa254eb1-726b-4b9e-8703-7923e8085e81,android,2,Specific Complaint,Notifications & Emails | AI Features,1
+play_13f4f1e1-0964-4fc1-a832-22d2c050df4e,android,2,Specific Complaint,AI Features | Applying,2
+play_f1d6fa1b-73ef-44c4-9a05-3853b6595e0d,android,2,Feature Request,Fake & Scam Listings | AI Features,2
+play_4ae41d12-14c4-4b75-992b-5fa81e8d803a,android,2,Feature Request,Listing Details & Quality,2
+play_ee045b49-b374-4f36-9777-8b27e7011d30,android,3,Specific Praise,Applying,4
+play_7dfe345a-66be-44d3-84da-522e9a293d7c,android,3,Specific Complaint,Bugs & Performance,3
+play_00668b21-2870-4e92-90fd-fe0c262f951f,android,3,Specific Complaint | Generic Good,Fake & Scam Listings | Search & Filters,3
+play_9fb8ccb0-caa0-41e2-a241-ebc9532e2ae4,android,3,Specific Complaint,Location & Distance,2
+play_8bb20ba5-8c32-4fca-8758-5c6ae45619ba,android,3,Specific Complaint,Recommendations & Relevance,2
+play_d80df123-f2e1-44b1-ba48-2eab1c46efc2,android,3,Generic Good,,4
+play_55b76ee9-29fe-41f1-8041-446e0cf17139,android,3,Specific Complaint,Location & Distance | Search & Filters,2
+play_96681a49-9cf5-48f7-b377-06bdda1cdcc5,android,3,Specific Complaint | Feature Request,Fake & Scam Listings | Employer Response & Status,2
+play_a9374f77-daa9-424d-b460-395fb3b1d776,android,3,Nonsense,,3
+play_cfc5edab-fb0f-4fe1-8999-8241966b2cac,android,3,Specific Complaint,Fake & Scam Listings,2
+play_882cac19-0d4d-4efa-941a-9dad5183af49,android,4,Specific Complaint | Generic Good,Job Outcomes,3
+play_2984b4bf-1ece-42e9-b08f-31c7f98eac39,android,4,Specific Praise,Search & Filters | UI / UX,4
+play_af150c47-1231-452b-8b71-310a5df99157,android,4,Specific Complaint | Generic Good,Listing Details & Quality,3
+play_148c5d6a-7f03-4363-8877-87dcffb4023f,android,4,Specific Praise,UI / UX | Search & Filters,5
+play_32fb1fdb-6b4e-4d2e-9c66-eea3c3cda4cf,android,4,Generic Good,,4
+play_e124de4c-2e75-4596-aed3-fe56604713e0,android,4,Specific Praise,Fake & Scam Listings,4
+play_0127360d-7cc2-4ccd-945a-b4239c8dba75,android,4,Generic Good,,4
+play_c4ab1c12-0e7c-43b7-baa6-1c16b190ee0b,android,4,Specific Praise,Job Outcomes,4
+play_11705946-c1b2-43b5-99fa-392acc5b2048,android,4,Generic Good,,4
+play_08911226-88a0-4257-b6f4-b7de0f79893b,android,4,Specific Praise,UI / UX | Job Availability,5
+play_dc4181f4-59f4-4a1b-8fac-cabdf274b713,android,5,Generic Good,,5
+play_8cd74975-9a56-4a05-8fac-8e5c11e82b39,android,5,Specific Praise,Job Outcomes,5
+play_60cf98ee-2114-4321-9962-b372993ccc76,android,5,Generic Good,,4
+play_71605206-7f83-403a-9395-13ad55817893,android,5,Generic Good,,4
+play_853adf0a-9dec-452d-a361-dbb271cd2bb6,android,5,Generic Good,,4
+play_16eb372f-ac12-4840-a400-18bb6d7fa7de,android,5,Specific Praise,Employer Response & Status | Job Outcomes,5
+play_e27effef-a4f6-48b6-add8-951889391985,android,5,Specific Praise,Job Outcomes,5
+play_34f88500-a65b-4f4b-a664-6138fd07b4d2,android,5,Specific Praise,Search & Filters,4
+play_d8028c9e-c466-4862-aa71-53536365b9cf,android,5,Specific Praise,Job Outcomes,4
+play_dcbd37da-84c3-444a-9a92-49cbd336df86,android,5,Generic Good,,4
+play_02db0d07-9e8f-4296-8657-50213765cfb4,android,5,Feature Request | Generic Good,UI / UX,4
+play_0ed6c392-95df-4162-adf4-acad30df0ae5,android,5,Generic Good,,4
+play_54f7f0da-a806-4c29-95da-2d7c6a555db9,android,5,Specific Praise,Job Availability,4
+play_4ab4352c-d72c-42af-bfaa-96f990ea4c1c,android,5,Generic Good,,4
+play_0f79b3a1-a000-4b31-9e6e-cff8df579e3e,android,5,Generic Good,,4
+play_4ca3ca4e-9817-4ff6-8d23-1ee91f9724f4,android,5,Generic Good,,5
+play_f909e23d-8ad7-4d4f-9f59-221eac9005e6,android,5,Generic Good,,4
+play_feba0508-0d8f-4614-a35f-78e44c0fe350,android,5,Specific Praise,Job Outcomes,4
+play_8b5686e9-4f1b-4728-ab81-24ff9b4616df,android,5,Nonsense,,3
+play_e0cffb8a-4b48-43d5-9412-92a86d75d27a,android,5,Generic Good,,4
+play_efded364-e580-449a-9ec1-fc8008931705,android,5,Generic Good,,4
+play_a02f07e9-0b03-4799-8929-c84470de5d39,android,5,Generic Good,,4
+play_24652279-0c08-459b-88f9-81ad37788f18,android,4,Generic Good,,4
+play_730c3a82-1b36-47d1-a9c1-f0be6db10955,android,5,Generic Good,,5
+play_d97205c7-1cdf-4094-b75a-a6bd3eea215d,android,5,Generic Good,,4
+play_6edefc34-8580-4f8a-a5d1-f95b192d116b,android,4,Specific Praise,UI / UX,4
+play_97d1b339-7d22-4542-83a1-f18d5fb82876,android,5,Generic Good,,4
+play_1999c834-e627-494c-ab2d-3e7b31fa147b,android,5,Generic Good,,4
+play_9261302f-0fde-4c10-bea9-0fd53e70dd80,android,5,Generic Good,,4
+play_d559d432-110d-4013-b46b-06df388963ce,android,4,Generic Good,,4
+play_26f7910f-1ebd-420f-b2fc-c2c0972e3a17,android,5,Generic Good,,5
+play_b7fe7ee0-7e1d-40be-9ab4-643f060e6a08,android,5,Generic Good,,5
+play_43e9ab26-2578-40f4-b13f-bf55ab0fb717,android,5,Specific Praise,Job Outcomes | Recommendations & Relevance,4
+play_ddc64644-fbd2-4c37-bfb3-640b4ddd39a4,android,1,Specific Complaint,Bugs & Performance | Notifications & Emails,1
+play_0776b53a-6161-4b99-8f16-6ab4de4920f6,android,5,Generic Good,,5
+play_d3798114-dd0d-4480-b19c-de9931f9514b,android,5,Generic Good,,4
+play_a97911c4-516c-401f-b3a3-b66be3d1ec5c,android,5,Generic Good,,4
+play_52c6b329-2d09-4575-b544-fd23db9658b7,android,4,Specific Complaint,Job Outcomes,3
+play_689386c3-f32f-43ea-a482-5d453811b83b,android,2,Specific Complaint | Generic Good,Recommendations & Relevance,3
+play_b2640042-f4c3-46af-a734-33318283cc58,android,5,Nonsense,,3
+play_5268f3e9-d1bb-4d47-b23e-74376477a7a2,android,5,Generic Good,,4
+play_62c056a6-4a5d-47ac-9be8-fbb5c5dfff31,android,1,Specific Complaint,Bugs & Performance | Login & Account,1
+play_0912c270-5ab7-4c6a-991b-29bf4f17097c,android,5,Specific Praise,UI / UX,4
+play_e9be55c6-ffe2-42a2-af94-2d0b63c20381,android,5,Specific Praise,Job Outcomes,5
+play_3a16602e-f5a3-4e5d-aa78-4f151fb3653c,android,5,Specific Praise,Job Outcomes,5
+play_c870acc5-833a-4ced-99ec-e5a024c642a3,android,5,Specific Praise,Job Outcomes | Job Availability,5
+play_edaaca6a-33c7-42ac-9b96-739dbdc8115c,android,5,Generic Good,,4
+play_a6d12806-7cbb-4430-b91a-acc9296dd765,android,5,Specific Praise,Search & Filters | Job Availability,4
+play_e52f6ecd-9512-4eb0-9825-c643829a3bc2,android,2,Specific Complaint,Employer Response & Status | Notifications & Emails,2
+play_de9cac67-0ed2-4e3f-93bd-17920e668d80,android,5,Specific Praise,Bugs & Performance,5
+play_93507d06-13a0-40b2-87f7-dd0868defdfc,android,5,Specific Praise,Applying | Listing Details & Quality,5
+play_32f36bca-fe1d-467b-835c-c553d2b3a67a,android,5,Specific Praise,Applying,5
+play_20b1ac58-4a4b-473f-995f-a89938e4ac2e,android,4,Specific Praise,Job Availability,4
+play_f0fa0dd3-4b5f-4705-b697-ff328ce27c74,android,4,Specific Complaint | Specific Praise,Employer Response & Status | Job Availability,3
+play_785a2335-2507-498a-94e2-ad20692773ff,android,5,Specific Praise,Job Outcomes,4
+play_1631870b-8963-4478-b8ef-962d597116da,android,2,Specific Complaint,Employer Response & Status,3
+play_aeb51b6f-e3a0-435c-9442-54ffba36d273,android,2,Specific Complaint | Specific Praise,Search & Filters | Job Availability,3
+play_304c9e7a-e41b-4165-ae20-28e4211ddb21,android,5,Specific Praise,Job Outcomes,4
+play_534a738d-9331-4e0d-ba5a-ed5532e21dfc,android,5,Specific Praise,Job Availability,4
+play_1f11e436-74ec-4cb4-9c3d-e0c8d86c0623,android,3,Specific Complaint,Job Outcomes,3
+ios_14596910297,ios,1,Specific Complaint,Fake & Scam Listings | Employer Response & Status,1
+ios_14611285280,ios,1,Specific Complaint,Employer Response & Status,1
+ios_14544474433,ios,1,Specific Complaint,Fake & Scam Listings | Listing Details & Quality,1
+ios_14456910180,ios,1,Specific Complaint,Bugs & Performance | Search & Filters,1
+ios_14491680978,ios,1,Specific Complaint,Bugs & Performance,2
+ios_14609412485,ios,1,Nonsense,,3
+ios_14601969580,ios,1,Specific Complaint,Login & Account,1
+ios_14621685374,ios,1,Specific Praise | Feature Request,Job Outcomes | Notifications & Emails,4
+ios_14616007847,ios,1,Specific Complaint,Fake & Scam Listings | Job Outcomes,1
+ios_14581697952,ios,5,Generic Good,,4
+ios_14331289699,ios,4,Specific Praise,Job Outcomes,4
+ios_14491113435,ios,5,Specific Praise,Job Outcomes,5
+ios_14506391245,ios,5,Specific Praise,Applying,4
+ios_14589284342,ios,4,Feature Request,Other | Employer Response & Status,3
+ios_14386083634,ios,3,Specific Complaint,Bugs & Performance | Search & Filters,2

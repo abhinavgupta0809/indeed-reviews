@@ -1,0 +1,560 @@
+{
+ "version": "1",
+ "about": "Written by Claude from the Oct 10, 2026 annotated corpus of Indeed Job Search reviews. Narrative only. Every number shown on the site comes from running each item's `match` against data/annotated_reviews.csv in build_site_data.py. Tokens in text ({{count}}, {{pct_low_star}}, {{avg_rating}}, {{ios_count}}, {{android_count}}, {{pct_of_substantive}}) are filled from that item's own match.",
+ "match_spec": {
+  "labels_any": "review has at least one of these labels",
+  "categories_any": "review has at least one of these categories",
+  "categories_all": "review has every one of these categories",
+  "pattern": "case-insensitive regex searched in lowercase title + review_text + english_translation + topic, joined by spaces",
+  "regression_claim": "true = only reviews with regression_claim TRUE",
+  "competitors_any": "review names at least one of these competitors",
+  "combine": "all present fields must hold (AND)"
+ },
+ "evidence_note": "Store reviews are self-selected and skew to people who are delighted or angry. Treat everything here as a signal to investigate, not a validated problem or a market size. Several of the largest complaints are about employers and the job market, which Indeed shapes but does not fully control.",
+ "callouts": [
+  {
+   "id": "c_market",
+   "placement": "overview",
+   "title": "The sharpest complaints are about the job market, not the app",
+   "text": "{{count}} complaints and requests are about employers not replying or about fake, scam, and ghost listings. {{pct_low_star}} of them come with 1 or 2 stars.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Employer Response & Status",
+     "Fake & Scam Listings"
+    ]
+   }
+  },
+  {
+   "id": "c_finding",
+   "placement": "overview",
+   "title": "Finding the right job is the main product complaint",
+   "text": "{{count}} complaints and requests are about search, filters, distance, or recommendations that miss.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Search & Filters",
+     "Location & Distance",
+     "Recommendations & Relevance"
+    ]
+   }
+  },
+  {
+   "id": "c_regression",
+   "placement": "overview",
+   "title": "\"It used to be better\"",
+   "text": "{{count}} reviewers say Indeed got worse than it was. {{ios_count}} of them are on iOS.",
+   "match": {
+    "regression_claim": true
+   }
+  },
+  {
+   "id": "c_pleas",
+   "placement": "overview",
+   "title": "The review box doubles as a job application",
+   "text": "{{count}} reviews are off-topic, most of them people describing their experience or asking for work. Their average rating is {{avg_rating}}, so they lift the star average without saying anything about the app.",
+   "match": {
+    "labels_any": [
+     "Nonsense"
+    ]
+   }
+  }
+ ],
+ "improvements": [
+  {
+   "id": "i_noreply",
+   "type": "explore",
+   "title": "Applying and hearing nothing back",
+   "desc": "Reviewers describe sending tens or hundreds of applications and getting no call, no rejection, and no status. Many conclude the jobs aren't real. This is the largest complaint in the corpus and the hardest for Indeed to fix alone, because the silence is the employer's.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Employer Response & Status"
+    ]
+   },
+   "short": "No reply after applying"
+  },
+  {
+   "id": "i_fake",
+   "type": "explore",
+   "title": "Fake, scam, and ghost listings",
+   "desc": "Listings that ask for money, jobs that turn out not to be hiring, and expired posts still shown. Reviewers ask Indeed to verify employers before a listing goes live.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Fake & Scam Listings"
+    ]
+   },
+   "short": "Fake and ghost jobs"
+  },
+  {
+   "id": "i_bugs",
+   "type": "fix",
+   "title": "The app freezes, won't open, or won't scroll",
+   "desc": "Blank screens, error pages on tapping a job, a search bar that can't be tapped, and job descriptions that won't scroll. A large share of these are on iOS and many follow an update.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Bugs & Performance"
+    ]
+   },
+   "short": "Bugs and freezes"
+  },
+  {
+   "id": "i_search",
+   "type": "fix",
+   "title": "Search ignores the terms and filters people set",
+   "desc": "Keyword searches return unrelated jobs, and filters for pay, job type, and remote work are reported as hidden, removed, or not applied.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Search & Filters"
+    ]
+   },
+   "short": "Search and filters"
+  },
+  {
+   "id": "i_distance",
+   "type": "fix",
+   "title": "Jobs far outside the distance people chose",
+   "desc": "A 15 or 25 mile radius returns jobs an hour or more away, or in another city or state. Reviewers who don't drive say the smallest commute option is too large.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Location & Distance"
+    ]
+   },
+   "short": "Distance ignored"
+  },
+  {
+   "id": "i_relevance",
+   "type": "explore",
+   "title": "Recommended jobs that don't fit",
+   "desc": "The feed and alerts show jobs outside the reviewer's field, level, or stated preferences, and repeat jobs already seen or dismissed.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Recommendations & Relevance"
+    ]
+   },
+   "short": "Irrelevant recommendations"
+  },
+  {
+   "id": "i_outcomes",
+   "type": "explore",
+   "title": "Months of use and still no job",
+   "desc": "Reviewers who have used Indeed for months or years without an offer and don't name a cause. Read alongside the no-reply group: together they describe effort without feedback.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Job Outcomes"
+    ]
+   },
+   "short": "No job after long use"
+  },
+  {
+   "id": "i_listing",
+   "type": "explore",
+   "title": "Listings missing pay, date, or location",
+   "desc": "No posting date, no pay or a very wide pay range, vague location, and results crowded by one employer or by sponsored posts.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Listing Details & Quality"
+    ]
+   },
+   "short": "Listing details"
+  },
+  {
+   "id": "i_apply",
+   "type": "explore",
+   "title": "Friction in the apply flow",
+   "desc": "Being sent to company sites to start over, long screener questions, the daily apply limit, and apply buttons that lead to an error.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Applying"
+    ]
+   },
+   "short": "Apply friction"
+  },
+  {
+   "id": "i_resume",
+   "type": "fix",
+   "title": "Resume upload and editing problems",
+   "desc": "Uploads that fail, formatting lost on import, wanting more than one resume, and edits the reviewer didn't ask for.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Resume & Profile"
+    ]
+   },
+   "short": "Resume problems"
+  },
+  {
+   "id": "i_notifications",
+   "type": "fix",
+   "title": "Too many emails and alerts",
+   "desc": "Daily job emails that don't match, alerts that continue after being hired or opting out, and prompts to follow up on old applications.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Notifications & Emails"
+    ]
+   },
+   "short": "Too many alerts"
+  },
+  {
+   "id": "i_login",
+   "type": "fix",
+   "title": "Locked out, or forced to give a phone number",
+   "desc": "Verification codes that never arrive, accounts tied to an old number with no way to change it, and a phone number required to sign in.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Login & Account"
+    ]
+   },
+   "short": "Login and phone number"
+  },
+  {
+   "id": "i_privacy",
+   "type": "explore",
+   "title": "Spam calls and texts after applying",
+   "desc": "Reviewers link unwanted calls, texts, and scam emails to having shared their number through Indeed, and say their data is being sold.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Privacy & Data"
+    ]
+   },
+   "short": "Spam after applying"
+  },
+  {
+   "id": "i_messages",
+   "type": "fix",
+   "title": "Messages and interviews that go missing",
+   "desc": "Employer messages that don't show in the app, interview invitations that employers don't know about, and no direct way to contact an employer.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Messages & Interviews"
+    ]
+   },
+   "short": "Messages and interviews"
+  },
+  {
+   "id": "i_ai",
+   "type": "explore",
+   "title": "AI features blamed for a worse experience",
+   "desc": "Reviewers name AI as the reason search got worse, as a screen that rejects applications unread, or as something that edits their resume without being asked.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "AI Features"
+    ]
+   },
+   "short": "AI blamed"
+  },
+  {
+   "id": "i_appweb",
+   "type": "explore",
+   "title": "Pushed from the website into the app",
+   "desc": "Saving a job or signing in on the website prompts a download, and the app then shows fewer jobs or lacks the feature.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "App vs Website"
+    ]
+   },
+   "short": "Forced into the app"
+  },
+  {
+   "id": "i_support",
+   "type": "fix",
+   "title": "No way to reach a person",
+   "desc": "Help pages that loop, no reply from the help center, and no phone line for job seekers.",
+   "match": {
+    "labels_any": [
+     "Specific Complaint",
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Customer Support"
+    ]
+   },
+   "short": "Support unreachable"
+  }
+ ],
+ "feature_requests": [
+  {
+   "id": "f_darkmode",
+   "title": "Dark mode",
+   "desc": "Asked for by name, often by people searching at night.",
+   "match": {
+    "pattern": "dark mode|night mode|dark theme|modo oscuro|modo escuro|mode sombre|modo noche|dunkelmodus|dark-mode|tema escuro|tema oscuro|modalità scura|ダークモード"
+   }
+  },
+  {
+   "id": "f_posting_date",
+   "title": "Show when a job was posted",
+   "desc": "Reviewers want the posting date back so they can skip stale listings.",
+   "match": {
+    "pattern": "post(ed|ing) date|date (it was )?posted|when (the|a) job was posted|how old|fecha de publicaci|data de publica|date de publication|posted on"
+   }
+  },
+  {
+   "id": "f_filters",
+   "title": "Better search filters",
+   "desc": "Filters for pay, job type, remote work, distance, and hiding companies or jobs already seen.",
+   "match": {
+    "labels_any": [
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Search & Filters",
+     "Location & Distance",
+     "Recommendations & Relevance"
+    ]
+   }
+  },
+  {
+   "id": "f_status",
+   "title": "Tell me where my application stands",
+   "desc": "A viewed or rejected status, a reply deadline for employers, or a flag on employers who never respond.",
+   "match": {
+    "labels_any": [
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Employer Response & Status",
+     "Messages & Interviews"
+    ]
+   }
+  },
+  {
+   "id": "f_verify",
+   "title": "Verify employers and listings",
+   "desc": "Checks before a job goes live, a faster way to report scams, and removal of expired posts.",
+   "match": {
+    "labels_any": [
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Fake & Scam Listings",
+     "Listing Details & Quality"
+    ]
+   }
+  },
+  {
+   "id": "f_resume",
+   "title": "More control over resumes",
+   "desc": "Several resumes to choose from per application, a profile photo, and keeping the original formatting.",
+   "match": {
+    "labels_any": [
+     "Feature Request"
+    ],
+    "categories_any": [
+     "Resume & Profile",
+     "Applying"
+    ]
+   }
+  },
+  {
+   "id": "f_ui",
+   "title": "Interface changes",
+   "desc": "A simpler layout, the old version back, and settings that are easier to find.",
+   "match": {
+    "labels_any": [
+     "Feature Request"
+    ],
+    "categories_any": [
+     "UI / UX"
+    ]
+   }
+  }
+ ],
+ "strengths": [
+  {
+   "id": "s_easy",
+   "title": "Easy to use is the most common praise",
+   "desc": "Praise for the app being simple to use and navigate, in every language.",
+   "match": {
+    "labels_any": [
+     "Specific Praise"
+    ],
+    "categories_any": [
+     "UI / UX"
+    ]
+   }
+  },
+  {
+   "id": "s_outcomes",
+   "title": "People say it got them a job",
+   "desc": "Reviewers who found work or interviews through Indeed, some several times over.",
+   "match": {
+    "labels_any": [
+     "Specific Praise"
+    ],
+    "categories_any": [
+     "Job Outcomes"
+    ]
+   }
+  },
+  {
+   "id": "s_availability",
+   "title": "Lots of jobs in one place",
+   "desc": "Praise for the number and variety of listings.",
+   "match": {
+    "labels_any": [
+     "Specific Praise"
+    ],
+    "categories_any": [
+     "Job Availability"
+    ]
+   }
+  },
+  {
+   "id": "s_apply",
+   "title": "Applying is quick",
+   "desc": "Praise for applying in a few taps with a saved resume.",
+   "match": {
+    "labels_any": [
+     "Specific Praise"
+    ],
+    "categories_any": [
+     "Applying"
+    ]
+   }
+  },
+  {
+   "id": "s_resume",
+   "title": "The resume builder helps",
+   "desc": "Praise for building or improving a resume inside the app.",
+   "match": {
+    "labels_any": [
+     "Specific Praise"
+    ],
+    "categories_any": [
+     "Resume & Profile"
+    ]
+   }
+  },
+  {
+   "id": "s_response",
+   "title": "When employers reply, it's remembered",
+   "desc": "Praise for quick calls and messages from employers: the mirror image of the largest complaint.",
+   "match": {
+    "labels_any": [
+     "Specific Praise"
+    ],
+    "categories_any": [
+     "Employer Response & Status"
+    ]
+   }
+  }
+ ],
+ "label_takeaways": {
+  "Generic Good": [
+   "The largest group by far, and it carries the star average. It says the app is liked; it doesn't say why.",
+   "Mostly one to three words, in dozens of languages. Leave it out of any qualitative read."
+  ],
+  "Specific Praise": [
+   "Three things earn most of it: the app is easy to use, it has a lot of jobs, and it got the reviewer a job or interviews.",
+   "Praise is about the app working as a tool. Complaints are mostly about what happens after applying."
+  ],
+  "Specific Complaint": [
+   "The largest complaint is silence: applying many times and hearing nothing from employers.",
+   "Fake, scam, and ghost listings come next, then a block of product problems: bugs, search and filters, and distance settings that aren't respected.",
+   "iOS complaints are a much larger share of iOS reviews than Android complaints are of Android reviews, on a much smaller sample."
+  ],
+  "Feature Request": [
+   "A small group. Dark mode and the job posting date are the two asks named most often.",
+   "Many requests are complaints in polite form: verify employers, show application status, respect the filters."
+  ],
+  "Generic Bad": [
+   "Short and angry, with no detail to act on.",
+   "Small next to Specific Complaint: unhappy Indeed reviewers usually say why."
+  ],
+  "Nonsense": [
+   "Mostly job pleas: people listing their experience, asking for work, or writing to an employer in the review box.",
+   "Most carry 4 or 5 stars, so they raise the average rating without rating the app."
+  ]
+ },
+ "category_notes": {
+  "Employer Response & Status": "The largest source of complaints. What reviewers describe is effort with no feedback: no reply, no rejection, no status.",
+  "Job Outcomes": "Mostly praise from people who got hired. The complaints are long searches with no result and no named cause.",
+  "Fake & Scam Listings": "Scams that ask for money, ghost jobs that aren't hiring, and expired listings. Low ratings when it's the complaint.",
+  "Listing Details & Quality": "Missing pay, posting date, or location, and results crowded by one employer or by sponsored posts.",
+  "Job Availability": "Mostly praise for the number and variety of jobs. Complaints are about thin coverage in a field or country.",
+  "Search & Filters": "The main product complaint: results that ignore the terms, and filters reported as hidden, removed, or not applied.",
+  "Location & Distance": "Jobs shown well outside the radius or city the reviewer set. Consistent and specific.",
+  "Recommendations & Relevance": "Split between praise for good matches and complaints about a feed that ignores stated preferences.",
+  "Applying": "Mostly praise for quick applications. Complaints are redirects to company sites, long questions, and the daily limit.",
+  "Resume & Profile": "Mostly praise for the resume builder. Complaints are failed uploads and wanting more than one resume.",
+  "Messages & Interviews": "Messages that don't show, interviews employers don't know about, and wanting a direct contact.",
+  "Notifications & Emails": "Praise for timely alerts, complaints about volume and alerts that don't match.",
+  "AI Features": "Small, and split. Complaints name AI as the reason search or screening got worse.",
+  "Login & Account": "Small and the lowest rated: codes that don't arrive, old phone numbers, and the phone-number requirement.",
+  "Privacy & Data": "Spam calls and texts that reviewers link to applying through Indeed.",
+  "Customer Support": "Small. Job seekers who can't reach a person.",
+  "Bugs & Performance": "Freezes, blank screens, and a search bar or job description that won't respond. A large share of iOS complaints.",
+  "UI / UX": "The largest category, almost all praise for being easy to use.",
+  "App vs Website": "Small. Being pushed into the app from the website, then finding the app does less.",
+  "Other": "Ads, company reviews, rating prompts, and anything that fits nowhere else."
+ }
+}

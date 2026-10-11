@@ -1,0 +1,72 @@
+{
+ "version": "1",
+ "labels": [
+  "Specific Praise",
+  "Specific Complaint",
+  "Feature Request",
+  "Generic Good",
+  "Generic Bad",
+  "Nonsense"
+ ],
+ "specific_labels": [
+  "Specific Praise",
+  "Specific Complaint",
+  "Feature Request"
+ ],
+ "generic_labels": [
+  "Generic Good",
+  "Generic Bad"
+ ],
+ "forbidden_label_pairs": [
+  [
+   "Generic Good",
+   "Specific Praise"
+  ],
+  [
+   "Generic Bad",
+   "Specific Complaint"
+  ],
+  [
+   "Generic Good",
+   "Generic Bad"
+  ]
+ ],
+ "categories": [
+  "Employer Response & Status",
+  "Job Outcomes",
+  "Fake & Scam Listings",
+  "Listing Details & Quality",
+  "Job Availability",
+  "Search & Filters",
+  "Location & Distance",
+  "Recommendations & Relevance",
+  "Applying",
+  "Resume & Profile",
+  "Messages & Interviews",
+  "Notifications & Emails",
+  "AI Features",
+  "Login & Account",
+  "Privacy & Data",
+  "Customer Support",
+  "Bugs & Performance",
+  "UI / UX",
+  "App vs Website",
+  "Other"
+ ],
+ "competitors": [
+  "LinkedIn",
+  "ZipRecruiter",
+  "Glassdoor",
+  "Naukri",
+  "SEEK",
+  "Apna",
+  "Monster",
+  "Google",
+  "Other"
+ ],
+ "max_labels": 2,
+ "max_categories": 2,
+ "sentiment_min": 1,
+ "sentiment_max": 5,
+ "mismatch_threshold": 2
+}
