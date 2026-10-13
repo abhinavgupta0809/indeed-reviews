@@ -1,5 +1,7 @@
 # Indeed review collection
 
+Live dashboard: https://indeed-reviews-site.vercel.app/ (Vercel project `indeed-reviews-site`, root `site`; a push to `main` redeploys).
+
 Phase 01 collects free public Google Play and App Store reviews. Python 3.11 is required.
 No API key is needed for collection. Phase 02 adds annotation and gold-set evaluation;
 the site build and deployment are separate phases.
