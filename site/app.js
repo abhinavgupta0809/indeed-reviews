@@ -5,7 +5,7 @@ const button = (text, action, className) => { const el = node('button', text, cl
 const scopes = ['all', 'android', 'ios'];
 const platformName = scope => ({all: 'All', android: 'Android', ios: 'iOS'})[scope];
 let summary, insights, ui, reviewPromise, renderEpoch;
-const state = {tab: 'overview', platform: 'all', deepKind: 'labels', deepName: '', deepTopic: '', deepLabel: '', deepStars: '', deepSort: 'helpful', deepPage: null, reviewPage: null, filters: {}, drawer: null, jump: null, chart: null};
+const state = {tab: 'overview', platform: 'all', deepKind: 'labels', deepName: '', deepTopic: '', deepLabel: '', deepStars: '', deepSort: 'helpful', deepPage: null, reviewPage: null, filters: {}, drawer: null, jump: null, chart: null, takeaway: null};
 const nf = (value, digits) => value === null || value === undefined ? 'n/a' : new Intl.NumberFormat('en-US', {maximumFractionDigits: digits ?? ui.zero, minimumFractionDigits: digits ?? ui.zero}).format(value);
 const pct = value => value === null || value === undefined ? 'n/a' : `${nf(value)}%`;
 const dateText = value => new Date(value).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'});
@@ -37,6 +37,7 @@ function hashState() {
   state.tab = ['overview', 'deep-dive', 'opportunities', 'reviews'].includes(tab) ? tab : 'overview';
   state.platform = scopes.includes(platform) ? platform : 'all';
   state.chart = state.tab === 'overview' ? params.get('chart') : null;
+  state.takeaway = state.tab === 'overview' ? params.get('takeaway') : null;
   if (state.tab === 'deep-dive') {
     const previousKind = state.deepKind, previousName = state.deepName;
     state.deepKind = ['labels', 'categories'].includes(params.get('mode')) ? params.get('mode') : 'labels';
@@ -101,40 +102,114 @@ const categoryLink = name => ({name, href: `#deep-dive?${new URLSearchParams({pl
 // A link to one chart on the Overview page. The href reopens the page at that chart; a plain click scrolls there without a reload.
 const chartHref = id => `#overview?${new URLSearchParams({platform: state.platform, chart: id})}`;
 function jumpToChart(id) { const target = document.getElementById(`chart-${id}`); if (!target) return; target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 2400); target.scrollIntoView({block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); const heading = target.querySelector('h3'); heading.tabIndex = -1; heading.focus({preventScroll: true}); }
-function takeaways(data, weeks, categories) {
+// A takeaway is a conclusion, the numbers behind it, and the next thing a PM would do about it.
+// Every figure is computed from the current scope so the text stays right under the platform toggle.
+// The wording is authored; the numbers, ranks, and conditional phrasing are not.
+const takeawayHref = index => `#overview?${new URLSearchParams({platform: state.platform, takeaway: index})}`;
+function jumpToTakeaway(index) { const target = document.getElementById(`takeaway-${index}`); if (!target) return; target.classList.add('highlight'); setTimeout(() => target.classList.remove('highlight'), 2400); target.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); const heading = target.querySelector('h3'); heading.tabIndex = -1; heading.focus({preventScroll: true}); }
+const insightCount = id => { for (const group of ['improvements', 'feature_requests', 'strengths', 'callouts']) for (const item of insights[group]) if (item.id === id) return item.scopes[state.platform].stats.count; return ui.zero; };
+const opportunityJump = (id, text) => ({text, onClick: () => { state.jump = id; navigate('opportunities'); }, href: `#opportunities?${new URLSearchParams({platform: state.platform})}`});
+const deepJump = (mode, group, text, platform = state.platform) => ({text, href: `#deep-dive?${new URLSearchParams({platform, mode, group}).toString().replaceAll('+', '%20')}`});
+function takeawayPoints(data, weeks, categories) {
   const s = data.stats, L = data.labels, r2 = value => nf(value, ui.rating_digits), points = [];
-  const [praiseLabel, complaintLabel] = ['Specific Praise', 'Specific Complaint'];
+  const [praiseLabel, complaintLabel, requestLabel] = ['Specific Praise', 'Specific Complaint', 'Feature Request'];
+  const cat = name => categories.find(c => c.name === name), complaints = c => c.by_label[complaintLabel];
+  const scopeNote = state.platform === 'all' ? '' : `${platformName(state.platform)} `;
+  const stars = weeks.map(w => w.avg_rating), weekLow = Math.min(...stars), weekHigh = Math.max(...stars), weekSwing = weekHigh - weekLow;
+  const complaintRank = entry => [...categories].sort((a, b) => complaints(b) - complaints(a)).findIndex(c => c.name === entry.name) + ui.one;
+  const rankText = rank => rank === ui.one ? 'the most of any topic' : `the #${rank} complaint topic`;
+
+  const sc = L[complaintLabel].count;
+
+  // 1. Silence after applying.
+  const reply = cat('Employer Response & Status'), outcomes = cat('Job Outcomes');
+  if (reply && !isSmall(reply)) { const waiting = outcomes ? complaints(outcomes) : ui.zero, asks = insightCount('f_status');
+    points.push({chart: 'about', see: 'What reviews are about', title: complaintRank(reply) === ui.one ? 'The top complaint is silence after applying' : 'Silence after applying is a leading complaint',
+      evidence: `${nf(complaints(reply))} ${scopeNote}complaints are about applying and hearing nothing back, ${rankText(complaintRank(reply))} (${r2(reply.avg_rating)} stars).${waiting ? ` ${nf(waiting)} more describe a long search with no result and name no cause.` : ''}${reply.by_label[praiseLabel] ? ` ${nf(reply.by_label[praiseLabel])} reviews praise an employer who did reply.` : ''}${asks ? ` ${nf(asks)} ask to see where an application stands.` : ''}`,
+      action: 'Pull the share of applications that get any employer action (viewed, message, rejection) within 7 and 14 days, by employer size, job age, and apply method. Then compare 30-day return rates for job seekers whose first ten applications got a response against those whose got none. If the gap is large, response rate is the retention lever, and the tests are closing out stale applications with a status and ranking responsive employers higher.',
+      more: opportunityJump('i_noreply', 'See the no-reply opportunity')}); }
+
+  // 2. Fake, scam, and ghost listings, with the spam that reviewers tie to applying.
+  const fake = cat('Fake & Scam Listings'), privacy = cat('Privacy & Data');
+  if (fake && !isSmall(fake)) { const verify = insightCount('f_verify'), spam = privacy && !isSmall(privacy) ? complaints(privacy) : ui.zero;
+    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: 'Fake and ghost listings are the trust problem',
+      evidence: `${nf(complaints(fake))} ${scopeNote}complaints are about scams, jobs that are not hiring, and expired posts (${r2(fake.avg_rating)} stars).${spam ? ` ${nf(spam)} more link spam calls and texts to having applied (${r2(privacy.avg_rating)} stars).` : ''}${verify ? ` ${nf(verify)} requests ask for employers to be verified or stale posts removed.` : ''}`,
+      action: 'Measure time from the first job-seeker report to takedown, and how many applications a listing collected before it came down, by employer verification level and posting source. Sample the listings these reviewers describe to split real scams from real jobs that were already filled: the first is a trust and safety queue, the second is a job-age and employer-activity rule. Then check whether people who applied to a removed listing are told.',
+      more: opportunityJump('i_fake', 'See the listings opportunity')}); }
+
+  // 3. Search, distance, and recommendations: results that ignore what was set.
+  const finding = ['Search & Filters', 'Location & Distance', 'Recommendations & Relevance'].map(cat).filter(c => c && !isSmall(c));
+  if (finding.length) { const total = insightCount('c_finding'), filters = insightCount('f_filters');
+    const words = {'Search & Filters': 'search and filters', 'Location & Distance': 'distance', 'Recommendations & Relevance': 'recommendations'};
+    points.push({chart: 'about', see: 'What reviews are about', title: 'Results ignore what the job seeker set',
+      evidence: `${nf(total)} ${scopeNote}complaints and requests are about results that do not match the search terms, filters, radius, or preferences the person chose. Complaints by topic: ${finding.map(c => `${words[c.name]} ${nf(complaints(c))} (${r2(c.avg_rating)} stars)`).join(', ')}.${filters ? ` ${nf(filters)} are requests for better filters.` : ''}`,
+      action: 'This can be measured without asking anyone: for each search, compute the share of results outside the radius, pay, job type, or remote setting the person chose, by platform and app version, with organic and sponsored results split. Any rate above zero on a hard filter is either a bug or a ranking decision; find out which. For recommendations, count how often a dismissed or already-applied job is shown again.',
+      more: opportunityJump('i_search', 'See the search and distance opportunities')}); }
+
+  // 4. Bugs, read by platform: iOS is a different picture from Android.
+  const bugs = cat('Bugs & Performance');
+  if (bugs && !isSmall(bugs)) { const ios = summary.ios, android = summary.android, worse = insightCount('c_regression');
+    const iosTop = categoryEntries(ios.categories).sort((a, b) => complaints(b) - complaints(a))[0];
+    const versionStars = data.versions.map(v => v.avg_rating), versionSpread = versionStars.length ? Math.max(...versionStars) - Math.min(...versionStars) : ui.zero, steady = versionStars.length > ui.one && versionSpread < 0.25;
+    const capNote = `Apple's feed returns at most 500 reviews per country, so iOS is a small sample (${countNote(ios.stats.count)}).`;
+    const named = 'freezes, blank screens, and a search bar or job description that will not respond';
+    const card = state.platform === 'all' ? {chart: 'platform-mix', see: 'Label mix by platform', title: 'iOS reviews read like a different product',
+        evidence: `iOS reviews average ${r2(ios.stats.avg_rating)} stars against ${r2(android.stats.avg_rating)} on Android. ${share(ios.labels[complaintLabel].count, ios.stats.count)} of iOS reviews are specific complaints, against ${share(android.labels[complaintLabel].count, android.stats.count)} on Android. ${iosTop.name} is the top iOS complaint topic (${nf(complaints(iosTop))}). ${capNote}`}
+      : state.platform === 'ios' ? {chart: 'platform-mix', see: 'Label mix by platform', title: complaintRank(bugs) === ui.one ? 'On iOS, bugs lead the complaints' : 'On iOS, bugs are a leading complaint',
+        evidence: `${nf(complaints(bugs))} iOS complaints are about ${named}, ${rankText(complaintRank(bugs))} (${r2(bugs.avg_rating)} stars).${worse ? ` ${nf(worse)} iOS reviews say the app got worse than it was.` : ''} ${capNote}`}
+      : {chart: data.versions.length > ui.one ? 'versions' : 'satisfaction', see: data.versions.length > ui.one ? 'Stars by Android version' : 'Satisfaction by category', title: steady ? 'On Android, bugs are steady and not tied to one release' : 'On Android, bugs are a leading complaint',
+        evidence: `${nf(complaints(bugs))} Android complaints are about ${named}, ${rankText(complaintRank(bugs))} (${r2(bugs.avg_rating)} stars).${versionStars.length > ui.one ? ` Mean stars by app version stay between ${r2(Math.min(...versionStars))} and ${r2(Math.max(...versionStars))} across ${nf(versionStars.length)} versions with ${nf(ui.hundred)} or more reviews.` : ''}`};
+    card.action = state.platform === 'android'
+      ? 'No release stands out, so cut by device maker, Android version, and country before cutting by app version. Pull crash and not-responding rates for the screens reviewers name (opening a job, the search bar, scrolling a description) and compare low-memory phones with the rest.'
+      : 'Check this against the App Store rating itself, which counts ratings left without text; written iOS reviews lean toward people with a problem. Then pull crash-free sessions and screen-load errors by iOS app version and OS version, and line the reviews that mention an update up against release dates. The complaints name specific screens (the search bar, the job description, the apply button), so they can be reproduced.';
+    card.more = opportunityJump('i_bugs', 'See the bugs opportunity'); points.push(card); }
+
+  // 5. Small and severe: getting into the account.
+  const login = cat('Login & Account'), support = cat('Customer Support');
+  if (login && !isSmall(login)) { const lowest = [...categories].filter(c => !isSmall(c) && c.avg_rating !== null).sort((a, b) => a.avg_rating - b.avg_rating)[0], isLowest = lowest.name === login.name, help = support ? complaints(support) : ui.zero;
+    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: isLowest ? 'The lowest-rated topic is getting into the account' : 'Sign-in problems are few and severe',
+      evidence: `${nf(complaints(login))} ${scopeNote}complaints are about verification codes that never arrive, accounts tied to an old phone number, and a phone number required to sign in. The topic averages ${r2(login.avg_rating)} stars${isLowest ? ', the lowest of any topic' : ''}, with ${pct(login.pct_low_star)} at 1 or 2 stars.${help ? ` ${nf(help)} more say they could not reach a person for help.` : ''}`,
+      action: 'Few reviews and an operational cause, so this is cheap to check: code delivery rate by country and carrier, the share of sign-in attempts that end without a session, and how many support contacts are account recovery after a phone number change. If recovery needs the old number, that is the fix. A locked-out job seeker also cannot see an employer\'s reply.',
+      more: opportunityJump('i_login', 'See the sign-in opportunity')}); }
+
+  // 6. Praise stops at the apply button.
+  const before = ['UI / UX', 'Job Availability', 'Applying'].map(cat).filter(Boolean), praiseBefore = before.reduce((sum, c) => sum + c.by_label[praiseLabel], ui.zero), complaintsBefore = before.reduce((sum, c) => sum + complaints(c), ui.zero);
+  if (reply && !isSmall(reply) && praiseBefore > complaintsBefore && complaints(reply) > reply.by_label[praiseLabel]) { const hired = insightCount('s_outcomes');
+    const words = {'UI / UX': 'ease of use', 'Job Availability': 'the number of jobs', 'Applying': 'quick applying'};
+    points.push({chart: 'about', see: 'What reviews are about', title: 'Praise is for everything before the apply; complaints start after it',
+      evidence: `Praise by topic: ${before.map(c => `${words[c.name]} ${nf(c.by_label[praiseLabel])}`).join(', ')}, against ${nf(complaintsBefore)} ${scopeNote}complaints across the same topics. After the apply the balance flips: employer response draws ${nf(complaints(reply))} complaints and ${nf(reply.by_label[praiseLabel])} praise.${hired ? ` ${nf(hired)} reviewers say ${summary.meta.product.name} got them a job or interviews.` : ''}`,
+      action: 'Reviewers praise the half of the product that ends at the apply button and judge it by the half that comes after. Put an outcome number beside applies started: the share of applicants with at least one employer response in 14 days, and interviews per applicant. Then check whether quick apply raises applications per job faster than employers answer them; if it does, the most-praised feature is feeding the top complaint.',
+      more: opportunityJump('s_apply', 'See what to protect')}); }
+
+  // Fallback so every scope shows six: the star average against the text.
   const five = data.ratings.find(r => r.value === ui.rating_max);
-  if (five) points.push({chart: 'stars-sentiment', see: 'Stars vs sentiment', title: s.avg_rating > s.avg_sentiment ? 'Stars run warmer than the words' : 'The words run warmer than the stars',
-    text: `${share(five.stars, s.count)} of reviews give ${ui.rating_max} stars; ${share(five.sentiment, s.sentiment_n)} read as a ${ui.rating_max} from the text alone. Average stars are ${r2(s.avg_rating)}, average sentiment is ${r2(s.avg_sentiment)}.`});
-  if (weeks.length > 1) {
-    const stars = weeks.map(w => w.avg_rating), volumes = weeks.map(w => w.volume), low = Math.min(...stars), high = Math.max(...stars), fewest = Math.min(...volumes);
-    points.push({chart: 'weekly', see: 'Volume and rating by week', title: high - low < 0.25 ? `Rating held steady for ${weeks.length} weeks` : `Weekly rating moved by ${r2(high - low)} stars`,
-      text: `Weekly average stars ranged from ${r2(low)} to ${r2(high)} across ${weeks.length} complete weeks, on ${nf(fewest)} to ${nf(Math.max(...volumes))} reviews a week.${fewest < ui.hundred ? ' Weekly samples are small here, so read the swings with care.' : ''}`});
-  }
-  const byComplaints = [...categories].sort((a, b) => b.by_label[complaintLabel] - a.by_label[complaintLabel] || a.name.localeCompare(b.name)), [first, second] = byComplaints;
-  if (second) points.push({chart: 'about', see: 'What reviews are about', title: `${first.name} draws the most complaints`,
-    text: `${nf(first.by_label[complaintLabel])} of its ${nf(first.count)} reviews are complaints (${share(first.by_label[complaintLabel], first.count)}). ${second.name} follows with ${nf(second.by_label[complaintLabel])}${second.by_label[praiseLabel] > second.by_label[complaintLabel] ? `, though it earns more praise (${nf(second.by_label[praiseLabel])})` : ''}.`});
-  const rated = categories.filter(c => c.avg_rating !== null && !isSmall(c)).sort((a, b) => b.avg_rating - a.avg_rating), below = rated.filter(c => c.avg_rating < ui.weekly_rating_min);
-  if (rated.length > 1) { const best = rated.at(0), worst = rated.at(-1);
-    points.push({chart: 'satisfaction', see: 'Satisfaction by category', title: `${below.length} of ${rated.length} categories average below ${ui.weekly_rating_min} stars`,
-      text: `${best.name} leads at ${r2(best.avg_rating)} stars (${countNote(best.count)}). ${worst.name} is lowest at ${r2(worst.avg_rating)} (${countNote(worst.count)}). Categories under ${nf(ui.small_category)} reviews are left out of this count.`}); }
-  const [high, low] = ['ios', 'android'].sort((a, b) => summary[b].labels[complaintLabel].pct_of_scope - summary[a].labels[complaintLabel].pct_of_scope), hi = summary[high], lo = summary[low];
-  if (hi.stats.count && lo.labels[complaintLabel].count) points.push({chart: 'platform-mix', see: 'Label mix by platform', title: `Specific complaints are ${nf(hi.labels[complaintLabel].pct_of_scope / lo.labels[complaintLabel].pct_of_scope, 1)}× as common on ${platformName(high)}`,
-    text: `${nf(hi.labels[complaintLabel].pct_of_scope)}% of ${platformName(high)} reviews are specific complaints, against ${nf(lo.labels[complaintLabel].pct_of_scope)}% on ${platformName(low)}. ${platformName(high)} averages ${r2(hi.stats.avg_rating)} stars (${countNote(hi.stats.count)}); ${platformName(low)} averages ${r2(lo.stats.avg_rating)} (${countNote(lo.stats.count)}).`});
-  const rivals = data.competitors.filter(c => c.count && c.name !== 'Other').sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  if (rivals.length > 1) { const [top, next] = rivals, lowStars = top.star_counts[0] + top.star_counts[1];
-    points.push({chart: 'competitors', see: 'Competitors named', title: `${top.name} is the rival reviewers name most`,
-      text: `${top.name} comes up in ${nf(top.count)} reviews, ahead of ${next.name} (${nf(next.count)}). ${share(lowStars, top.count)} of the reviews naming ${top.name} give the app 1 or 2 stars, against ${pct(s.pct_low_star)} of all ${state.platform === 'all' ? '' : `${platformName(state.platform)} `}reviews.`}); }
+  if (points.length < 6 && five && s.substantive) points.push({chart: 'stars-sentiment', see: 'Stars vs sentiment',
+    title: s.avg_rating <= s.avg_sentiment ? 'The words run warmer than the stars' : s.avg_rating >= ui.rating_max - ui.one ? 'The star average hides the problems' : 'The text reads harsher than the stars',
+    evidence: `${share(five.stars, s.count)} of ${scopeNote}reviews give ${ui.rating_max} stars, but only ${share(five.sentiment, s.sentiment_n)} read as a ${ui.rating_max} from the text. Average stars ${r2(s.avg_rating)}, average sentiment ${r2(s.avg_sentiment)}.${L.Nonsense.count ? ` ${nf(L.Nonsense.count)} reviews are off-topic, mostly people asking for work, and they carry stars too.` : ''}`,
+    action: `Track specific complaints as a share of substantive reviews (${nf(sc)} of ${nf(s.substantive)}, ${share(sc, s.substantive)}) beside the star average. The weekly star average moved ${r2(weekSwing)} across ${weeks.length} weeks; check the low weeks against release dates before reading them as noise.`,
+    more: deepJump('labels', complaintLabel, 'Read the specific complaints')});
+
+  return points;
+}
+// The next step sits behind a disclosure so a card reads as one line of evidence until the reader asks for more.
+function nextStep(text, more) {
+  const details = node('details', undefined, 'next-step'), summary = node('summary'); summary.append(icon('arrow'), node('span', 'Next step')); details.append(summary, node('p', text));
+  if (more) { const link = node('a', undefined, 'key-point-link secondary'); link.href = more.href; link.append(node('span', more.text), icon('arrow')); if (more.onClick) link.addEventListener('click', event => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); more.onClick(); }); details.append(link); }
+  return details;
+}
+function takeaways(points) {
   const list = node('ol', undefined, 'key-points');
   points.forEach((point, index) => {
-    const item = node('li', undefined, 'key-point'), link = node('a', undefined, 'key-point-link');
+    const n = index + ui.one, item = node('li', undefined, 'key-point'); item.id = `takeaway-${n}`;
+    const link = node('a', undefined, 'key-point-link');
     link.href = chartHref(point.chart); link.append(node('span', `See chart: ${point.see}`), icon('arrow'));
     link.addEventListener('click', event => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); jumpToChart(point.chart); });
-    item.append(node('p', String(index + 1).padStart(2, '0'), 'key-point-index'), node('h3', point.title), node('p', point.text), link); list.append(item);
+    item.append(node('p', String(n).padStart(ui.two, '0'), 'key-point-index'), node('h3', point.title), node('p', point.evidence, 'key-point-evidence'), nextStep(point.action, point.more), link); list.append(item);
   });
   return list;
 }
+// Back-links from a chart to the takeaways that rest on it, in chartCard's {text, href, onClick} form.
+const takeawayLinks = (points, chart) => points.map((point, index) => ({point, n: index + ui.one})).filter(({point}) => point.chart === chart).map(({point, n}) => ({text: `Takeaway ${String(n).padStart(ui.two, '0')}: ${point.title}`, href: takeawayHref(n), onClick: () => jumpToTakeaway(n)}));
 function overview() {
   const root = node('div'); const data = current(), s = data.stats, L = data.labels;
   const band = node('div', undefined, 'stat-band');
@@ -164,15 +239,15 @@ function overview() {
     data: {steps}, table: {columns: ['Step', 'Reviews', 'Share of all'], rows: steps.map(st => [st.name, `${st.sign || ''}${nf(st.value)}`, share(st.value, s.count)])}}));
   root.append(lead);
 
-  const weeks = data.weekly;
-  root.append(sectionHeading('Key takeaways', `${platformName(state.platform)} · each one links to the chart behind it`), takeaways(data, weeks, categoryEntries(data.categories)));
+  const weeks = data.weekly, points = takeawayPoints(data, weeks, categoryEntries(data.categories)), backlinks = chart => takeawayLinks(points, chart);
+  root.append(sectionHeading('Key takeaways', `${platformName(state.platform)} · what the reviews show and the next check for each · store reviews are self-selected, so treat these as signals to investigate, not validated problems`), takeaways(points));
 
   const weekLabels = weeks.map(w => new Date(w.week).toLocaleDateString('en-US', {month: 'short', day: 'numeric', timeZone: 'UTC'}));
-  const trend = node('div', undefined, 'grid');
-  trend.append(chartCard({id: 'weekly', span: 12, kind: 'combo', height: 340, title: 'Volume and rating by week',
-    subtitle: `Bars count reviews on the left axis; lines show average stars and sentiment on the right, fixed at 1 to 5 · complete weeks, Monday start · ${countNote(s.weekly_n)}`,
-    data: {labels: weekLabels, volume: weeks.map(w => w.volume), stars: weeks.map(w => w.avg_rating), sentiment: weeks.map(w => w.avg_sentiment)},
-    table: {columns: ['Week of', 'Reviews', 'Average stars', 'Average sentiment'], rows: weeks.map((w, i) => [weekLabels[i], nf(w.volume), nf(w.avg_rating, ui.rating_digits), nf(w.avg_sentiment, ui.rating_digits)])}}));
+  const trend = node('div', undefined, 'grid'), thin = w => w.volume < ui.small_category;
+  trend.append(chartCard({id: 'weekly', span: 12, kind: 'combo', height: 340, title: 'Volume and rating by week', takeaways: backlinks('weekly'),
+    subtitle: `Bars count reviews on the left axis; lines show average stars and sentiment on the right, fixed at 1 to 5 · averages are left blank for weeks with fewer than ${nf(ui.small_category)} reviews · complete weeks, Monday start · ${countNote(s.weekly_n)}`,
+    data: {labels: weekLabels, volume: weeks.map(w => w.volume), stars: weeks.map(w => thin(w) ? null : w.avg_rating), sentiment: weeks.map(w => thin(w) ? null : w.avg_sentiment)},
+    table: {columns: ['Week of', 'Reviews', 'Average stars', 'Average sentiment'], rows: weeks.map((w, i) => [weekLabels[i], nf(w.volume), thin(w) ? '–' : nf(w.avg_rating, ui.rating_digits), thin(w) ? '–' : nf(w.avg_sentiment, ui.rating_digits)])}}));
   root.append(sectionHeading('How reviews trend'), trend);
 
   const mood = node('div', undefined, 'grid');
@@ -187,7 +262,7 @@ function overview() {
     data: {segments: moodSegments, center: share(moodSegments[0].value, s.sentiment_n), caption: 'positive'},
     legend: moodSegments.map(seg => ({token: seg.token, name: seg.name, value: nf(seg.value), share: share(seg.value, s.sentiment_n)})),
     table: {columns: ['Sentiment', 'Reviews', 'Share'], rows: moodSegments.map(seg => [seg.name, nf(seg.value), share(seg.value, s.sentiment_n)])}}));
-  mood.append(chartCard({id: 'stars-sentiment', span: 4, kind: 'groupedBars', height: 360, title: 'Stars vs sentiment', subtitle: 'Reviews at each score. Stars pile up at 5; the words are more measured',
+  mood.append(chartCard({id: 'stars-sentiment', span: 4, kind: 'groupedBars', height: 360, title: 'Stars vs sentiment', takeaways: backlinks('stars-sentiment'), subtitle: 'Reviews at each score. Stars pile up at 5; the words are more measured',
     data: {labels: data.ratings.map(r => String(r.value)), series: [{name: 'Stars given', token: '--stars', values: data.ratings.map(r => r.stars)}, {name: 'Sentiment of text', token: '--sentiment', values: data.ratings.map(r => r.sentiment)}]},
     table: {columns: ['Score', 'Stars given', 'Sentiment of text'], rows: data.ratings.map(r => [String(r.value), nf(r.stars), nf(r.sentiment)])}}));
   root.append(sectionHeading('The mood'), mood);
@@ -196,7 +271,7 @@ function overview() {
   const satisfaction = [...categories].filter(c => c.avg_rating !== null).sort((a, b) => b.avg_rating - a.avg_rating);
   const [praiseLabel, complaintLabel, requestLabel] = ['Specific Praise', 'Specific Complaint', 'Feature Request'];
   const topics = node('div', undefined, 'grid');
-  topics.append(chartCard({id: 'about', span: 7, kind: 'stackedBars', height: rowsHeight(categories.length), title: 'What reviews are about',
+  topics.append(chartCard({id: 'about', span: 7, kind: 'stackedBars', height: rowsHeight(categories.length), title: 'What reviews are about', takeaways: backlinks('about'),
     subtitle: `Reviews per category, split by their first label · a review with two categories counts in both · ${countNote(s.substantive)} substantive · select a category to read its reviews`,
     links: categories.map(c => categoryLink(c.name)),
     data: {linked: true, labels: categories.map(categoryLabel), faded: categories.map(isSmall), series: [
@@ -204,7 +279,7 @@ function overview() {
       {name: 'Requests', token: '--request', values: categories.map(c => c.by_label[requestLabel])},
       {name: 'Complaints', token: '--complaint', values: categories.map(c => c.by_label[complaintLabel])}]},
     table: {columns: ['Category', 'Praise', 'Requests', 'Complaints', 'Total'], rows: categories.map(c => [c.name, nf(c.by_label[praiseLabel]), nf(c.by_label[requestLabel]), nf(c.by_label[complaintLabel]), nf(c.count)])}}));
-  topics.append(chartCard({id: 'satisfaction', span: 5, kind: 'diverging', height: rowsHeight(satisfaction.length), title: 'Satisfaction by category',
+  topics.append(chartCard({id: 'satisfaction', span: 5, kind: 'diverging', height: rowsHeight(satisfaction.length), title: 'Satisfaction by category', takeaways: backlinks('satisfaction'),
     subtitle: `Mean stars, drawn from the midpoint of ${ui.weekly_rating_min}.0 · right is above, left is below · select a category to read its reviews`,
     links: satisfaction.map(c => categoryLink(c.name)),
     data: {linked: true, labels: satisfaction.map(categoryLabel), values: satisfaction.map(c => c.avg_rating), center: ui.weekly_rating_min, faded: satisfaction.map(isSmall), notes: satisfaction.map(c => countNote(c.count))},
@@ -213,7 +288,7 @@ function overview() {
 
   const platforms = scopes.filter(p => p !== 'all');
   const compare = node('div', undefined, 'grid');
-  compare.append(chartCard({id: 'platform-mix', span: 6, kind: 'stackedBars', height: 210, title: 'Label mix by platform', subtitle: 'Share of each first label · always shows both platforms',
+  compare.append(chartCard({id: 'platform-mix', span: 6, kind: 'stackedBars', height: 210, title: 'Label mix by platform', takeaways: backlinks('platform-mix'), subtitle: 'Share of each first label · always shows both platforms',
     data: {percent: true, labels: platforms.map(p => `${platformName(p)} (${countNote(summary[p].stats.count)})`), series: LABEL_ORDER.map(name => ({name, token: colorForLabel(name), values: platforms.map(p => summary[p].labels[name].pct_of_scope)}))},
     table: {columns: ['Label', ...platforms.map(platformName)], rows: LABEL_ORDER.map(name => [name, ...platforms.map(p => `${nf(summary[p].labels[name].pct_of_scope, 1)}% (${nf(summary[p].labels[name].count)})`)])}}));
   const mismatch = node('section', undefined, 'chart-card span-6'); const mismatchHead = node('div', undefined, 'chart-header'), mismatchTitle = node('div');
@@ -226,9 +301,9 @@ function overview() {
 
   const over = node('div', undefined, 'grid');
   const showVersions = state.platform !== 'ios' && data.versions.length > 1;
-  if (showVersions) { const most = Math.max(...data.versions.map(v => v.count));
-    over.append(chartCard({span: 6, kind: 'line', height: 280, title: 'Stars by Android version', subtitle: `Versions with ${nf(ui.hundred)} or more reviews, in release order · y-axis starts at 3.5 · larger points have more reviews`,
-      data: {labels: data.versions.map(v => v.name), values: data.versions.map(v => v.avg_rating), token: '--stars', min: 3.5, max: 5, digits: 1, name: 'Mean stars', radii: data.versions.map(v => 3 + 5 * Math.sqrt(v.count / most)), notes: data.versions.map(v => countNote(v.count))},
+  if (showVersions) { const most = Math.max(...data.versions.map(v => v.count)), versionMin = Math.max(ui.one, Math.floor(Math.min(...data.versions.map(v => v.avg_rating)) * ui.two) / ui.two);
+    over.append(chartCard({id: 'versions', span: 6, kind: 'line', height: 280, title: 'Stars by Android version', takeaways: backlinks('versions'), subtitle: `Versions with ${nf(ui.hundred)} or more reviews, in release order · y-axis starts at ${nf(versionMin, ui.one)} · larger points have more reviews`,
+      data: {labels: data.versions.map(v => v.name), values: data.versions.map(v => v.avg_rating), token: '--stars', min: versionMin, max: 5, digits: 1, name: 'Mean stars', radii: data.versions.map(v => 3 + 5 * Math.sqrt(v.count / most)), notes: data.versions.map(v => countNote(v.count))},
       table: {columns: ['Version', 'Mean stars', 'Reviews'], rows: data.versions.map(v => [v.name, nf(v.avg_rating, ui.rating_digits), nf(v.count)])}})); }
   over.append(chartCard({span: showVersions ? 6 : 12, kind: 'line', height: 280, title: '"It got worse" per week', subtitle: `Reviews that say the product declined · complete weeks · ${countNote(weeks.reduce((sum, w) => sum + w.regression, 0))}`,
     data: {labels: weekLabels, values: weeks.map(w => w.regression), token: '--complaint', fill: true, name: 'Reviews'},
@@ -238,8 +313,8 @@ function overview() {
   const competitors = [...data.competitors].filter(c => c.count).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   const band3 = c => [c.star_counts[0] + c.star_counts[1], c.star_counts[2], c.star_counts[3] + c.star_counts[4]];
   const context = node('div', undefined, 'grid');
-  context.append(chartCard({id: 'competitors', span: 7, kind: 'stackedBars', height: rowsHeight(competitors.length, 30, 80), title: 'Competitors named',
-    subtitle: 'Reviews that name another product, split by the stars the reviewer gave this app',
+  context.append(chartCard({id: 'competitors', span: 7, kind: 'stackedBars', height: rowsHeight(competitors.length, 30, 80), title: 'Competitors named', takeaways: backlinks('competitors'),
+    subtitle: `Reviews that name another product, split by the stars the reviewer gave ${summary.meta.product.name}`,
     data: {labels: competitors.map(c => c.name), series: [{name: '4 to 5 stars', token: '--praise', values: competitors.map(c => band3(c)[2])}, {name: '3 stars', token: '--neutral', values: competitors.map(c => band3(c)[1])}, {name: '1 to 2 stars', token: '--complaint', values: competitors.map(c => band3(c)[0])}]},
     table: {columns: ['Competitor', '4 to 5 stars', '3 stars', '1 to 2 stars', 'Total'], rows: competitors.map(c => [c.name, nf(band3(c)[2]), nf(band3(c)[1]), nf(band3(c)[0]), nf(c.count)])}}));
   const named = data.languages.filter(l => l.name !== 'Other'), top = named.slice(0, 6), rest = s.count - top.reduce((sum, l) => sum + l.count, 0);
@@ -341,12 +416,25 @@ function opportunityCard(item, kind) {
   if (kind === 'improvements') { const row = node('div', undefined, 'meter-row'), track = node('span', undefined, 'meter'), fill = node('span', undefined, 'meter-fill'); fill.style.width = `${stats.pct_low_star ?? 0}%`; track.append(fill); row.append(track, node('span', pct(stats.pct_low_star), 'num'), node('span', 'at 1 to 2 stars')); card.append(row); }
   else if (kind === 'strengths') card.append(dotted(`${nf(stats.avg_rating, ui.rating_digits)} mean stars`, '--stars', 'p'));
   if (stats.count < ui.few_reviews) card.append(node('p', 'Few reviews in this view', 'few-note'));
+  if (scope.next) card.append(nextStep(scope.next));
   const foot = node('div', undefined, 'opp-foot'), split = node('p', undefined, 'split');
   split.append(dotted(`Android ${nf(stats.android_count)}`, '--android'), dotted(`iOS ${nf(stats.ios_count)}`, '--ios'));
   const see = button('See reviews', () => openDrawer(item, see), 'see'); see.append(icon('arrow')); see.dataset.insightId = item.id; foot.append(split, see); card.append(foot); return card;
 }
 const median = values => { const sorted = [...values].sort((a, b) => a - b), mid = Math.floor(sorted.length / 2); return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2; };
 function jumpToInsight(id) { const target = document.getElementById(`insight-${id}`); if (!target) return; target.classList.add('highlight'); target.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); target.querySelector('button').focus({preventScroll: true}); }
+// Three lines under the matrix: what sits in each quadrant that calls for action, with a link to each card. Same medians as the chart.
+function startHere(points, medianX, medianY) {
+  const groups = [
+    {title: 'Fix first', note: 'many reviews, mostly 1 to 2 stars', test: p => p.x >= medianX && p.y >= medianY},
+    {title: 'Cheap and loud', note: 'few reviews, mostly 1 to 2 stars; usually operational', test: p => p.x < medianX && p.y >= medianY},
+    {title: 'Product and marketplace questions', note: 'many reviews, mixed stars', test: p => p.x >= medianX && p.y < medianY}];
+  const list = node('ol', undefined, 'start-list');
+  for (const group of groups) { const members = points.filter(group.test).sort((a, b) => b.x - a.x); if (!members.length) continue;
+    const row = node('li'); const head = node('p', undefined, 'start-head'); head.append(node('strong', group.title), node('span', ` · ${group.note}`)); row.append(head);
+    const chips = node('p', undefined, 'start-items'); members.forEach((p, i) => { const link = node('a', `${p.name} (${nf(p.x)})`); link.href = `#opportunities?${new URLSearchParams({platform: state.platform})}`; link.addEventListener('click', event => { event.preventDefault(); jumpToInsight(p.id); }); chips.append(link); if (i < members.length - ui.one) chips.append(node('span', ' · ')); }); row.append(chips); list.append(row); }
+  const wrap = node('section', undefined, 'start-here'); wrap.append(node('h2', 'Start here'), node('p', 'Open "Next step" on any card for the check to run. Store reviews size the signal, not the problem.', 'muted'), list); return wrap;
+}
 function opportunities() {
   const root = node('div'), data = current(), s = data.stats; root.append(node('p', insights.evidence_note, 'evidence'));
   const improve = insights.improvements.map(item => ({item, scope: item.scopes[state.platform]})).filter(e => e.scope.stats.count).sort((a, b) => b.scope.stats.count - a.scope.stats.count || a.item.id.localeCompare(b.item.id));
@@ -365,6 +453,7 @@ function opportunities() {
       data: {points, medianX: median(points.map(p => p.x)), medianY: median(points.map(p => p.y)), onPick: jumpToInsight},
       table: {columns: ['Area', 'Type', 'Reviews', 'At 1 to 2 stars'], rows: tableRows}}));
     root.append(lead);
+    root.append(startHere(points, median(points.map(p => p.x)), median(points.map(p => p.y))));
   }
   const categories = categoryEntries(data.categories);
   const hurting = [...categories].map(c => ({...c, complaints: c.by_label['Specific Complaint'], requests: c.by_label['Feature Request']})).filter(c => c.complaints + c.requests).sort((a, b) => (b.complaints + b.requests) - (a.complaints + a.requests));
@@ -381,22 +470,22 @@ function opportunities() {
     data: {labels: requests.map(r => r.name), values: requests.map(r => r.count), token: '--request'},
     table: {columns: ['Theme', 'Reviews'], rows: requests.map(r => [r.name, nf(r.count)])}}));
   root.append(sectionHeading('Signal by category', `${platformName(state.platform)} · ${countNote(s.substantive)} substantive reviews`), grid);
-  for (const [group, title, note] of [['improvements', 'Areas to improve', 'Largest first. The bar shows how many of those reviews came with 1 or 2 stars'], ['feature_requests', 'Top feature requests', ''], ['strengths', 'What to protect', 'The things praised by name']]) {
+  for (const [group, title, note] of [['improvements', 'Areas to improve', 'Largest first · the bar shows the share at 1 or 2 stars · each card has a next step'], ['feature_requests', 'Top feature requests', ''], ['strengths', 'What to protect', 'The things praised by name']]) {
     root.append(sectionHeading(title, note)); const cards = node('div', undefined, 'opportunity-grid');
     for (const item of [...insights[group]].filter(i => i.scopes[state.platform].stats.count).sort((a, b) => b.scopes[state.platform].stats.count - a.scopes[state.platform].stats.count || a.id.localeCompare(b.id))) cards.append(opportunityCard(item, group));
     if (!cards.childNodes.length) cards.append(node('p', 'No matching signals in this view.', 'muted')); root.append(cards);
   } return root;
 }
-function resetReviewFilters() { state.filters = {search: '', stars: '', label: '', category: '', language: '', from: '', to: '', substantive: false, sort: 'helpful'}; state.reviewPage = ui.one; }
+function resetReviewFilters() { state.filters = {search: '', stars: '', label: '', category: '', competitor: '', language: '', from: '', to: '', substantive: false, sort: 'helpful'}; state.reviewPage = ui.one; }
 async function reviewsTab() {
   const rows = await reviews(), root = node('div'), filters = node('div', undefined, 'filters'), f = state.filters;
   const listContainer = node('div');
-  const filtered = () => sortReviews(rows.filter(r => (state.platform === 'all' || r.platform === state.platform) && (!f.search || r.search.includes(f.search.toLocaleLowerCase())) && (!f.stars || r.rating === Number(f.stars)) && (!f.label || r.labels.includes(f.label)) && (!f.category || r.categories.includes(f.category)) && (!f.language || r.language === f.language) && (!f.from || r.date_utc >= f.from) && (!f.to || r.date_utc <= f.to) && (!f.substantive || r.categories.length)), f.sort);
+  const filtered = () => sortReviews(rows.filter(r => (state.platform === 'all' || r.platform === state.platform) && (!f.search || r.search.includes(f.search.toLocaleLowerCase())) && (!f.stars || r.rating === Number(f.stars)) && (!f.label || r.labels.includes(f.label)) && (!f.category || r.categories.includes(f.category)) && (!f.competitor || r.competitors.includes(f.competitor)) && (!f.language || r.language === f.language) && (!f.from || r.date_utc >= f.from) && (!f.to || r.date_utc <= f.to) && (!f.substantive || r.categories.length)), f.sort);
   const refreshList = () => { const focus = rememberFocus(listContainer); const matched = filtered(); listContainer.replaceChildren(node('h2', `${nf(matched.length)} reviews match`, 'results-heading'), reviewList(matched, state.reviewPage, ui.page_reviews, page => { state.reviewPage = page; refreshList(); }, () => { resetReviewFilters(); renderPage(); })); restoreFocus(listContainer, focus); };
   const set = (key, value) => { f[key] = value; state.reviewPage = ui.one; refreshList(); };
   const search = node('input'); search.type = 'search'; search.placeholder = 'Search original, translation, or topic'; search.value = f.search; search.addEventListener('input', () => set('search', search.value)); filters.append(field('Search reviews', search, 'search'));
   filters.append(field('Stars', selectControl(starOptions(), f.stars, v => set('stars', v))));
-  for (const [key, title, values] of [['label', 'Label', summary.meta.taxonomy.labels], ['category', 'Category', summary.meta.taxonomy.categories], ['language', 'Language', [...new Set(rows.map(r => r.language))].sort()]]) filters.append(field(title, selectControl([['', `All ${key === 'category' ? 'categories' : `${key}s`}`], ...values.map(v => [v, key === 'language' ? languageName(v) : v])], f[key], v => set(key, v))));
+  for (const [key, title, values] of [['label', 'Label', summary.meta.taxonomy.labels], ['category', 'Category', summary.meta.taxonomy.categories], ['competitor', 'Names a competitor', summary.meta.taxonomy.competitors], ['language', 'Language', [...new Set(rows.map(r => r.language))].sort()]]) filters.append(field(title, selectControl([['', key === 'competitor' ? 'Any or none' : `All ${key === 'category' ? 'categories' : `${key}s`}`], ...values.map(v => [v, key === 'language' ? languageName(v) : v])], f[key], v => set(key, v))));
   for (const [key, title] of [['from', 'From date'], ['to', 'To date']]) { const input = node('input'); input.type = 'date'; input.min = summary.meta.date_range.start; input.max = summary.meta.date_range.end; input.value = f[key]; input.addEventListener('change', () => set(key, input.value)); filters.append(field(title, input)); }
   const substantive = node('input'); substantive.type = 'checkbox'; substantive.checked = f.substantive; substantive.addEventListener('change', () => set('substantive', substantive.checked)); const check = node('label', undefined, 'checkbox'); check.append(substantive, node('span', 'Substantive only')); filters.append(check, field('Sort', selectControl(sortOptions(), f.sort, v => set('sort', v))), button('Clear filters', () => { resetReviewFilters(); renderPage(); }));
   root.append(filters); const downloads = node('div', undefined, 'header-actions'); for (const [file, title] of [['raw_reviews.csv', 'Reviews CSV'], ['annotated_reviews.csv', 'Annotated CSV']]) { const link = node('a', undefined, 'button'); link.append(icon('download'), node('span', title)); link.href = file; link.download = file; downloads.append(link); } root.append(downloads, listContainer); refreshList(); return root;
@@ -411,6 +500,7 @@ async function renderPage() {
     // Arriving from a category link on a chart: start at the top of that category's page, with focus on its name.
     if (state.fromLink && state.tab === 'deep-dive') { state.fromLink = false; window.scrollTo({top: ui.zero}); const heading = $('#content .detail-header h2'); if (heading) { heading.tabIndex = -1; heading.focus({preventScroll: true}); } }
     if (state.chart && state.tab === 'overview') { jumpToChart(state.chart); state.chart = null; }
+    if (state.takeaway && state.tab === 'overview') { jumpToTakeaway(state.takeaway); state.takeaway = null; }
     if (state.drawer) await renderDrawer();
     if (state.jump && state.tab === 'opportunities') { const target = document.getElementById(`insight-${state.jump}`); jumpToInsight(state.jump); state.jump = null; }
   } catch (error) { if (epoch === renderEpoch) $('#content').replaceChildren(errorView(error)); }
@@ -468,7 +558,7 @@ async function boot() {
   try {
     summary = await fetchJSON('data/summary.json'); ui = summary.meta.ui; renderEpoch = ui.zero; state.deepPage = state.reviewPage = ui.one; resetReviewFilters();
     const meta = summary.meta; $('#subtitle').textContent = `${nf(summary.all.stats.count)} reviews · Google Play and App Store · ${dateText(meta.date_range.start)} to ${dateText(meta.date_range.end)}`;
-    $('#footer').append(node('p', `Public Google Play and App Store reviews · Android ${nf(meta.platform_totals.android)} / iOS ${nf(meta.platform_totals.ios)} · ${dateText(meta.date_range.start)} to ${dateText(meta.date_range.end)} (UTC).`), node('p', `Labels and sentiment by an LLM, scored against ${nf(meta.gold.n)} hand-labeled reviews. Sentiment averages exclude ${nf(summary.all.stats.nonsense_count)} Nonsense reviews; store-star averages and review counts include them. Primary label agreement ${nf(meta.gold.primary_label.pct, ui.rating_digits)}% (${meta.gold.primary_label.matches}/${meta.gold.primary_label.n}); category agreement ${nf(meta.gold.primary_category.pct, ui.rating_digits)}% (${meta.gold.primary_category.matches}/${meta.gold.primary_category.n}).`), node('p', `Independent, unofficial analysis of public store reviews. Generated ${dateText(meta.generated_at.split('T').at(ui.zero))} from the source run timestamp.`));
+    $('#footer').append(node('p', `Public Google Play and App Store reviews · Android ${nf(meta.platform_totals.android)} / iOS ${nf(meta.platform_totals.ios)} · ${dateText(meta.date_range.start)} to ${dateText(meta.date_range.end)} (UTC).`), node('p', `Labels and sentiment by an LLM, scored against ${nf(meta.gold.n)} hand-labeled reviews. Sentiment averages exclude ${nf(summary.all.stats.nonsense_count)} Nonsense reviews; store-star averages and review counts include them. Primary label agreement ${nf(meta.gold.primary_label.pct, ui.rating_digits)}% (${meta.gold.primary_label.matches}/${meta.gold.primary_label.n}); category agreement ${nf(meta.gold.primary_category.pct, ui.rating_digits)}% (${meta.gold.primary_category.matches}/${meta.gold.primary_category.n}).`), node('p', `Apple's feed returns at most 500 reviews per country, so iOS is a small sample next to Android; read every iOS figure with its n. ${nf(summary.all.labels.Nonsense.count)} reviews are off-topic, mostly people describing their experience or asking for work. They are labeled Nonsense.`), node('p', `Independent, unofficial analysis of public store reviews. Not affiliated with ${meta.product.company}. Generated ${dateText(meta.generated_at.split('T').at(ui.zero))} from the source run timestamp.`));
     insights = await fetchJSON('data/insights.json'); hashState(); initControls(); await renderPage();
   } catch (error) { $('#content').replaceChildren(errorView(error)); }
 }

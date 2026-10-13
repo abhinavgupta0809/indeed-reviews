@@ -13,13 +13,40 @@ from pipeline.common import ScrapeError, dt
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_MATCH_COUNTS = {
-    'c_money': 1059, 'c_accuracy': 444, 'c_regression': 235, 'c_lowsignal': 5115, 'c_ios': 424,
-    'i_credits': 202, 'i_free_images': 161, 'i_free_questions': 507, 'i_wrong': 444, 'i_ignores': 73,
-    'i_cancel': 120, 'i_promos': 57, 'i_bugs': 228, 'i_style': 177, 'i_voice': 117, 'i_history': 84,
-    'i_support': 71, 'i_computer': 68, 'i_models': 69, 'i_login': 60, 'i_preinstalled': 63,
-    'f_free_uploads': 89, 'f_pricing': 50, 'f_search': 22, 'f_ui': 21, 'f_voice': 19,
-    'f_threads': 19, 'f_computer': 13, 'f_models': 12,
-    's_research': 556, 's_sources': 550, 's_study': 308, 's_accuracy': 730, 's_speed': 464, 's_models': 44,
+    'c_market': 1835,
+    'c_finding': 1313,
+    'c_regression': 375,
+    'c_pleas': 1689,
+    'i_noreply': 1314,
+    'i_fake': 669,
+    'i_bugs': 722,
+    'i_search': 543,
+    'i_distance': 453,
+    'i_relevance': 597,
+    'i_outcomes': 669,
+    'i_listing': 356,
+    'i_apply': 279,
+    'i_resume': 282,
+    'i_notifications': 185,
+    'i_login': 202,
+    'i_privacy': 177,
+    'i_messages': 171,
+    'i_ai': 144,
+    'i_appweb': 92,
+    'i_support': 57,
+    'f_darkmode': 59,
+    'f_posting_date': 50,
+    'f_filters': 226,
+    'f_status': 88,
+    'f_verify': 108,
+    'f_resume': 108,
+    'f_ui': 79,
+    's_easy': 2968,
+    's_outcomes': 1644,
+    's_availability': 1823,
+    's_apply': 1127,
+    's_resume': 510,
+    's_response': 702,
 }
 
 
@@ -197,10 +224,12 @@ def test_two_builds_byte_identical_and_exact_csv_copies(tmp_path, rows, taxonomy
     assert before=={str(p.relative_to(args.site)):p.read_bytes() for p in args.site.rglob('*') if p.is_file()}
 
 
-def test_current_corpus_expected_match_counts(taxonomy):
+def test_current_corpus_expected_match_counts():
     path=ROOT/'data/annotated_reviews.csv'
     if not path.exists():
         pytest.skip('Real annotated CSV absent; current-corpus matcher regression skipped')
+    # The real corpus is labeled with the live taxonomy, not the fixture copy the other tests use.
+    taxonomy=json.loads((ROOT/'analysis/taxonomy.json').read_text())
     rows=site.read_reviews(path,taxonomy)
     source=json.loads((ROOT/'analysis/insights.json').read_text())
     actual={item['id']:sum(site.compile_match(item['match'],taxonomy)(r) for r in rows) for group in site.GROUPS for item in source[group]}

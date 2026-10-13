@@ -143,14 +143,14 @@ def resolve_insights(source, rows, taxonomy):
             matched = [r for r in rows if matcher(r)]
             if not matched:
                 raise ScrapeError(f'Insight {item["id"]} matches zero reviews in all scope')
-            resolved = {k: v for k, v in item.items() if k not in ('title', 'text', 'desc')}
+            resolved = {k: v for k, v in item.items() if k not in ('title', 'text', 'desc', 'next')}
             resolved['scopes'] = {}
             for scope in SCOPES:
                 subset = [r for r in matched if scope == 'all' or r['platform'] == scope]
                 substantive = sum(bool(r['categories']) for r in rows if scope == 'all' or r['platform'] == scope)
                 stats = statistics(subset, substantive, taxonomy)
                 resolved['scopes'][scope] = {'stats': stats, 'review_ids': [r['review_id'] for r in subset],
-                                           **{k: fill_tokens(item[k], stats) for k in ('title', 'text', 'desc') if k in item}}
+                                           **{k: fill_tokens(item[k], stats) for k in ('title', 'text', 'desc', 'next') if k in item}}
             result[group].append(resolved)
     return result
 
@@ -159,6 +159,8 @@ def complete_weeks(rows, manifest):
     run_time = dt(manifest['run_time_utc'])
     cutoff = run_time - timedelta(days=manifest['settings']['window_days'])
     first_full = cutoff.date() + timedelta(days=bool(cutoff.hour or cutoff.minute or cutoff.second or cutoff.microsecond))
+    # An all-time window opens long before the first review; start the weeks at the first review instead.
+    first_full = max(first_full, min(dt(r['date_utc'] + 'T00:00:00Z').date() for r in rows))
     last_full = max(dt(r['date_utc'] + 'T00:00:00Z').date() for r in rows) - timedelta(days=1)
     monday = first_full + timedelta(days=(-first_full.weekday()) % 7)
     weeks = []
@@ -233,6 +235,11 @@ def scope_summary(rows, daily, scope, weeks, taxonomy):
         weekly.append({'week': start, 'volume': sum(r['count'] for r in daily if start <= r['date_utc'] < end and (scope == 'all' or r['platform'] == scope)),
                        'n': len(group), 'avg_rating': st['avg_rating'], 'avg_sentiment': st['avg_sentiment'], 'sentiment_n': st['sentiment_n'],
                        'regression': sum(r['regression_claim'] for r in group)})
+    # Complaints per complete week for each category, so a trend claim on the site is computed, not typed.
+    for name, group in categories.items():
+        group['weekly_complaints'] = [sum(name in r['categories'] and r['labels'][0] == taxonomy['specific_labels'][1]
+                                          and start <= r['date_utc'] < (dt(start + 'T00:00:00Z') + timedelta(days=7)).date().isoformat()
+                                          for r in subset) for start in weeks]
     stats.update(weekly_n=sum(w['n'] for w in weekly), weekly_sentiment_n=sum(w['sentiment_n'] for w in weekly),
                  weekly_volume_n=sum(w['volume'] for w in weekly),
                  pain_n=sum(bool(r['categories']) and bool(set(r['labels']) & set(taxonomy['specific_labels'][1:])) for r in subset),
@@ -269,7 +276,8 @@ def build(args):
     insights = resolve_insights(source, rows, taxonomy)
     weeks, first_full, last_full = complete_weeks(rows, manifest)
     summary = {scope: scope_summary(rows, daily, scope, weeks, taxonomy) for scope in SCOPES}
-    summary['meta'] = {'run_time': manifest['run_time_utc'], 'generated_at': manifest['run_time_utc'],
+    summary['meta'] = {'product': {'name': config.PRODUCT_NAME, 'company': config.PRODUCT_COMPANY, 'label_model': config.ANNOTATION_MODEL},
+                       'run_time': manifest['run_time_utc'], 'generated_at': manifest['run_time_utc'],
                        'generated_at_basis': 'Source run timestamp, fixed for deterministic builds',
                        'date_range': {'start': min(r['date_utc'] for r in rows), 'end': max(r['date_utc'] for r in rows)},
                        'first_full_day': first_full, 'last_full_day': last_full, 'weeks': weeks,

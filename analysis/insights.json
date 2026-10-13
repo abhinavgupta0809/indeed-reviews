@@ -1,6 +1,6 @@
 {
  "version": "1",
- "about": "Written by Claude from the Oct 10, 2026 annotated corpus of Indeed Job Search reviews. Narrative only. Every number shown on the site comes from running each item's `match` against data/annotated_reviews.csv in build_site_data.py. Tokens in text ({{count}}, {{pct_low_star}}, {{avg_rating}}, {{ios_count}}, {{android_count}}, {{pct_of_substantive}}) are filled from that item's own match.",
+ "about": "Written by Claude from the Oct 10, 2026 annotated corpus of Indeed Job Search reviews. Narrative only. Each item has a `next` line: the check a PM with internal data would run, written without figures. Every number shown on the site comes from running each item's `match` against data/annotated_reviews.csv in build_site_data.py. Tokens in text ({{count}}, {{pct_low_star}}, {{avg_rating}}, {{ios_count}}, {{android_count}}, {{pct_of_substantive}}) are filled from that item's own match.",
  "match_spec": {
   "labels_any": "review has at least one of these labels",
   "categories_any": "review has at least one of these categories",
@@ -72,6 +72,7 @@
    "type": "explore",
    "title": "Applying and hearing nothing back",
    "desc": "Reviewers describe sending tens or hundreds of applications and getting no call, no rejection, and no status. Many conclude the jobs aren't real. This is the largest complaint in the corpus and the hardest for Indeed to fix alone, because the silence is the employer's.",
+   "next": "Pull the share of applications that get any employer action (viewed, message, rejection) within 7 and 14 days, by employer size, job age, and apply method. Compare return rates for job seekers whose early applications got a response against those whose got none; that gap says how much response rate is worth.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -88,6 +89,7 @@
    "type": "explore",
    "title": "Fake, scam, and ghost listings",
    "desc": "Listings that ask for money, jobs that turn out not to be hiring, and expired posts still shown. Reviewers ask Indeed to verify employers before a listing goes live.",
+   "next": "Measure time from the first job-seeker report to takedown and the applications a listing collected before it came down, by employer verification level and posting source. Sample the listings reviewers describe to separate scams from real jobs that were already filled; they need different fixes.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -104,6 +106,7 @@
    "type": "fix",
    "title": "The app freezes, won't open, or won't scroll",
    "desc": "Blank screens, error pages on tapping a job, a search bar that can't be tapped, and job descriptions that won't scroll. A large share of these are on iOS and many follow an update.",
+   "next": "Pull crash-free sessions and screen-load errors by app version, OS version, and device, starting with iOS. Line the reviews that mention an update up against release dates. The complaints name screens (search bar, job description, apply button), so reproduce those first.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -120,6 +123,7 @@
    "type": "fix",
    "title": "Search ignores the terms and filters people set",
    "desc": "Keyword searches return unrelated jobs, and filters for pay, job type, and remote work are reported as hidden, removed, or not applied.",
+   "next": "For each search, compute the share of results that fall outside the keywords and filters the person set, with organic and sponsored results split. Check the filters reviewers say are missing against the current app on both platforms: removed, moved, or never there.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -136,6 +140,7 @@
    "type": "fix",
    "title": "Jobs far outside the distance people chose",
    "desc": "A 15 or 25 mile radius returns jobs an hour or more away, or in another city or state. Reviewers who don't drive say the smallest commute option is too large.",
+   "next": "Compute the share of results beyond the chosen radius, by platform and by remote or hybrid flag. Find out whether radius is a hard filter or a ranking input, and whether sponsored jobs are exempt. Check the smallest radius offered against how far people without a car travel.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -152,6 +157,7 @@
    "type": "explore",
    "title": "Recommended jobs that don't fit",
    "desc": "The feed and alerts show jobs outside the reviewer's field, level, or stated preferences, and repeat jobs already seen or dismissed.",
+   "next": "Count how often the feed and alerts show a job the person dismissed, already applied to, or that falls outside their stated field and level. Compare apply rates on recommended jobs for people who set preferences against those who did not.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -168,6 +174,7 @@
    "type": "explore",
    "title": "Months of use and still no job",
    "desc": "Reviewers who have used Indeed for months or years without an offer and don't name a cause. Read alongside the no-reply group: together they describe effort without feedback.",
+   "next": "These reviewers name no cause, so find one in the data: for accounts active for months without an interview, look at applications sent, response rate, and how well their applications matched the jobs. That separates a matching problem from a market problem.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -184,6 +191,7 @@
    "type": "explore",
    "title": "Listings missing pay, date, or location",
    "desc": "No posting date, no pay or a very wide pay range, vague location, and results crowded by one employer or by sponsored posts.",
+   "next": "Measure the share of listings with pay, posting date, and a precise location, by posting source, and whether listings with those fields get more applies and fewer reports. Check how many results on a typical first page come from one employer or are sponsored.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -200,6 +208,7 @@
    "type": "explore",
    "title": "Friction in the apply flow",
    "desc": "Being sent to company sites to start over, long screener questions, the daily apply limit, and apply buttons that lead to an error.",
+   "next": "Pull apply completion by path: in-app apply, redirect to a company site, and applies with screener questions. Find where people drop and how often the apply button ends in an error. For the daily limit, count who hits it and what they do next.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -216,6 +225,7 @@
    "type": "fix",
    "title": "Resume upload and editing problems",
    "desc": "Uploads that fail, formatting lost on import, wanting more than one resume, and edits the reviewer didn't ask for.",
+   "next": "Pull resume upload failure rate by file type and size, and how often people re-upload right after an import. Count accounts that keep swapping one resume between applications; that is the demand for more than one.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -232,6 +242,7 @@
    "type": "fix",
    "title": "Too many emails and alerts",
    "desc": "Daily job emails that don't match, alerts that continue after being hired or opting out, and prompts to follow up on old applications.",
+   "next": "Measure unsubscribe and mute rates by alert type, and how many alerts go to people already marked hired or who opted out. Check relevance: the share of emailed jobs that match the saved search behind them.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -248,6 +259,7 @@
    "type": "fix",
    "title": "Locked out, or forced to give a phone number",
    "desc": "Verification codes that never arrive, accounts tied to an old number with no way to change it, and a phone number required to sign in.",
+   "next": "Check code delivery rate by country and carrier, the share of sign-in attempts that end without a session, and how many support contacts are account recovery after a phone number change. If recovery needs the old number, that is the fix.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -264,6 +276,7 @@
    "type": "explore",
    "title": "Spam calls and texts after applying",
    "desc": "Reviewers link unwanted calls, texts, and scam emails to having shared their number through Indeed, and say their data is being sold.",
+   "next": "Trace a sample of these complaints to the listings applied to: were they later removed as scams, and did the application share a phone number? Count applicants to removed listings and check whether they are warned.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -280,6 +293,7 @@
    "type": "fix",
    "title": "Messages and interviews that go missing",
    "desc": "Employer messages that don't show in the app, interview invitations that employers don't know about, and no direct way to contact an employer.",
+   "next": "Measure message delivery end to end: employer sends, app shows, job seeker opens. Check interview invitations created against those the employer confirms. A gap at any step is a defect with a count attached.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -296,6 +310,7 @@
    "type": "explore",
    "title": "AI features blamed for a worse experience",
    "desc": "Reviewers name AI as the reason search got worse, as a screen that rejects applications unread, or as something that edits their resume without being asked.",
+   "next": "Read these by feature named: search, screening, resume edits. For each, check whether the complaint lines up with a launch date and whether the feature can be turned off. An unrequested resume edit is a consent question before it is a quality question.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -312,6 +327,7 @@
    "type": "explore",
    "title": "Pushed from the website into the app",
    "desc": "Saving a job or signing in on the website prompts a download, and the app then shows fewer jobs or lacks the feature.",
+   "next": "Compare what the mobile website and the app can do, feature by feature, starting with saving a job and the number of results shown. Measure how many people who are sent to the app install it and how many leave.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -328,6 +344,7 @@
    "type": "fix",
    "title": "No way to reach a person",
    "desc": "Help pages that loop, no reply from the help center, and no phone line for job seekers.",
+   "next": "Pull the help-center contact rate for job seekers, the share of contacts that get a reply from a person, and time to first reply. Check which help paths loop back to the same article.",
    "match": {
     "labels_any": [
      "Specific Complaint",
@@ -345,6 +362,7 @@
    "id": "f_darkmode",
    "title": "Dark mode",
    "desc": "Asked for by name, often by people searching at night.",
+   "next": "Check the request rate against how many sessions run at night and on OLED phones. This is a contained build; size it against the search and distance work before scheduling it.",
    "match": {
     "pattern": "dark mode|night mode|dark theme|modo oscuro|modo escuro|mode sombre|modo noche|dunkelmodus|dark-mode|tema escuro|tema oscuro|modalità scura|ダークモード"
    }
@@ -353,6 +371,7 @@
    "id": "f_posting_date",
    "title": "Show when a job was posted",
    "desc": "Reviewers want the posting date back so they can skip stale listings.",
+   "next": "Confirm what the app shows today for job age on each platform. If the date was removed or shortened, test showing it again and watch reports of stale listings and apply rate on older jobs.",
    "match": {
     "pattern": "post(ed|ing) date|date (it was )?posted|when (the|a) job was posted|how old|fecha de publicaci|data de publica|date de publication|posted on"
    }
@@ -361,6 +380,7 @@
    "id": "f_filters",
    "title": "Better search filters",
    "desc": "Filters for pay, job type, remote work, distance, and hiding companies or jobs already seen.",
+   "next": "List the filters named most in these requests and check each against the current app on both platforms. Where a filter exists and is still requested, the problem is that people cannot find it or do not believe it.",
    "match": {
     "labels_any": [
      "Feature Request"
@@ -376,6 +396,7 @@
    "id": "f_status",
    "title": "Tell me where my application stands",
    "desc": "A viewed or rejected status, a reply deadline for employers, or a flag on employers who never respond.",
+   "next": "Check what share of applications ever show a status beyond submitted. Test a default status for applications with no employer action after a set time, and measure whether those job seekers return more.",
    "match": {
     "labels_any": [
      "Feature Request"
@@ -390,6 +411,7 @@
    "id": "f_verify",
    "title": "Verify employers and listings",
    "desc": "Checks before a job goes live, a faster way to report scams, and removal of expired posts.",
+   "next": "Map what verification an employer passes before a listing goes live, by posting source. Measure report rates for verified against unverified employers; if the gap is wide, show the verification on the listing.",
    "match": {
     "labels_any": [
      "Feature Request"
@@ -404,6 +426,7 @@
    "id": "f_resume",
    "title": "More control over resumes",
    "desc": "Several resumes to choose from per application, a profile photo, and keeping the original formatting.",
+   "next": "Count accounts that replace their resume between applications in the same week. Test saved resume versions with a picker at apply time and watch apply completion.",
    "match": {
     "labels_any": [
      "Feature Request"
@@ -418,6 +441,7 @@
    "id": "f_ui",
    "title": "Interface changes",
    "desc": "A simpler layout, the old version back, and settings that are easier to find.",
+   "next": "Read these next to the release log: requests for the old version usually follow a redesign. Find which change they name and check its usage before and after.",
    "match": {
     "labels_any": [
      "Feature Request"
@@ -433,6 +457,7 @@
    "id": "s_easy",
    "title": "Easy to use is the most common praise",
    "desc": "Praise for the app being simple to use and navigate, in every language.",
+   "next": "Protect this in every redesign: keep time to first search and time to first apply as release guardrails, and watch them when new modules are added to the home screen.",
    "match": {
     "labels_any": [
      "Specific Praise"
@@ -446,6 +471,7 @@
    "id": "s_outcomes",
    "title": "People say it got them a job",
    "desc": "Reviewers who found work or interviews through Indeed, some several times over.",
+   "next": "Use these reviewers to define success. Pull what hired job seekers did differently in their first weeks (applications sent, response rate, profile completeness) and build onboarding toward that.",
    "match": {
     "labels_any": [
      "Specific Praise"
@@ -459,6 +485,7 @@
    "id": "s_availability",
    "title": "Lots of jobs in one place",
    "desc": "Praise for the number and variety of listings.",
+   "next": "Track listings per search by field and country, since the complaints in this topic are thin coverage in specific fields. Check that volume praise holds once filled and duplicate listings are removed.",
    "match": {
     "labels_any": [
      "Specific Praise"
@@ -472,6 +499,7 @@
    "id": "s_apply",
    "title": "Applying is quick",
    "desc": "Praise for applying in a few taps with a saved resume.",
+   "next": "Quick apply is praised here and its result is the top complaint. Check whether applications per job have grown faster than employer responses, and whether a light relevance check before applying improves response rate without hurting completion.",
    "match": {
     "labels_any": [
      "Specific Praise"
@@ -485,6 +513,7 @@
    "id": "s_resume",
    "title": "The resume builder helps",
    "desc": "Praise for building or improving a resume inside the app.",
+   "next": "Measure whether people who build a resume in the app get a higher employer response rate than people who upload one. If they do, that is the claim to put in front of new users.",
    "match": {
     "labels_any": [
      "Specific Praise"
@@ -498,6 +527,7 @@
    "id": "s_response",
    "title": "When employers reply, it's remembered",
    "desc": "Praise for quick calls and messages from employers: the mirror image of the largest complaint.",
+   "next": "Find the employers these reviewers describe: fast first response. Measure what share of applications go to employers like that, and test ranking them higher or labeling them.",
    "match": {
     "labels_any": [
      "Specific Praise"

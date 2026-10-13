@@ -1,5 +1,8 @@
 from pathlib import Path
 
+# Shown on the site; the site reads these from summary.meta, never from typed text.
+PRODUCT_NAME = "Indeed"
+PRODUCT_COMPANY = "Indeed"
 PLAY_APP_ID = "com.indeed.android.jobsearch"
 APPSTORE_ID = "309735670"
 PLAY_LANGS = (

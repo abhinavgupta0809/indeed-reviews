@@ -1,5 +1,40 @@
 # Site design spec, v2
 
+> This file was written for the Perplexity run. Structure and behavior are unchanged. Category names
+> in the older sections below are from that taxonomy; the Indeed section governs every color, type,
+> and theme choice.
+
+## Indeed palette (Oct 13, 2026)
+
+The standing rule from Abhinav (Oct 12, 2026): each dashboard wears the company's colors so a reader
+knows whose product it covers at a glance. This section overrides every token rule below. The source
+of truth for values is `site/styles.css`.
+
+- **Source.** Colors in the public stylesheets of indeed.com/about, indeed.design and indeed.jobs,
+  read Oct 13, 2026: blues `#002970`, `#003a9b`, `#004fcb`, `#5592fd`, `#87b3ff`, `#bfd3ff`,
+  `#ecf2ff`; neutrals `#151515`, `#2d2d2d`, `#424242`, `#595959`, `#949494`, `#d4d2d0`, `#e4e2e0`,
+  `#f3f2f1`, `#f7f6f5`; reds `#a9252b`, `#f76266`. The same stylesheets set `Indeed Sans` with Noto
+  Sans as the first open fallback. Every other shade is derived.
+- **Identity.** No logo and no wordmark. The footer says independent, unofficial, not affiliated.
+- **Shell.** A full-bleed `#003a9b` masthead with white text and white buttons, a white working area
+  with `#f7f6f5` cards, and a `#002970` navy footer. Masthead and footer keep their colors in dark.
+- **Controls.** Selection (platform toggle, pressed chips) is `#003a9b` on white; links, the active
+  tab underline, and focus rings are `#004fcb`. In dark these move to `#87b3ff` and `#5592fd`.
+- **Meaning colors, light / dark.** complaint red `#a9252b` / `#f76266`, from Indeed's own reds and
+  far from the blue masthead so the brand never reads as "bad"; praise green `#0f7b63` / `#4fbfa3`,
+  request violet `#7d4fc4` / `#b08cf0`, stars amber `#d98b14` / `#f0a83a` (all derived); sentiment
+  `#5592fd`. Generic praise and generic complaints are the pale versions of praise and complaint.
+  The languages donut is the blue ramp.
+- **Type.** Noto Sans throughout, bold for the title, section headings and headline figures. Noto
+  Sans Mono for tabular figures and axis ticks.
+- **Default theme.** Light, because Indeed's own product is white. Claude's call, not yet confirmed
+  by Abhinav. The Theme button switches and remembers.
+- **Takeaways.** Six cards on the Overview, each a conclusion, the evidence with counts, and a
+  "Next step" disclosure. Each links to its chart and to an opportunity card or the reviews; charts
+  link back. Every opportunity, request and strength card carries a `next` line from
+  `analysis/insights.json`. Card wording lives in `takeawayPoints` in `site/app.js`.
+
+
 Written by Claude. v2 replaces the v1 look after Abhinav's review of the first build: "every text
 is white, every chart is blue", too few chart forms, and volume and rating should share one chart.
 Structure, tabs, data rules, and behavior from v1 stand unless this file changes them.
